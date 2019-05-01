@@ -1,5 +1,5 @@
 ﻿using CsvHelper;
-using HtmlAgilityPack;
+//using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -40,43 +40,43 @@ namespace OR_Results
 
         private static void Results()
         {
-            GenerateResults();
-            DisplayResults();
+            //GenerateResults();
+            //DisplayResults();
         }
 
-        private static void GenerateResults()
-        {
-            var competitorCourseSummaries = new List<CompetitorResultSummary>();
+        //private static void GenerateResults()
+        //{
+        //    var competitorCourseSummaries = new List<CompetitorResultSummary>();
 
-            var competitorCourseSummary = new CompetitorResultSummary();
-            competitorCourseSummary.SI = coursePunches.Take(1).DefaultIfEmpty().FirstOrDefault().SI;
-            competitorCourseSummary.StartTime = ParseCourseAndTime(coursePunches.Where(s => s.CoursePunchName == "S").FirstOrDefault().CoursePunchTime);
-            competitorCourseSummary.Status = GetCompetitorStatus(coursePunches);
-            if(competitorCourseSummary.Status == (int)Status.Finished)
-            {
-                CalculateElapsedTime(competitorCourseSummary);
-                CalculateScore(competitorCourseSummary);
+        //    var competitorCourseSummary = new CompetitorResultSummary();
+        //    competitorCourseSummary.SI = coursePunches.Take(1).DefaultIfEmpty().FirstOrDefault().SI;
+        //    competitorCourseSummary.StartTime = ParseCourseAndTime(coursePunches.Where(s => s.CoursePunchName == "S").FirstOrDefault().CoursePunchTime);
+        //    competitorCourseSummary.Status = GetCompetitorStatus(coursePunches);
+        //    if(competitorCourseSummary.Status == (int)Status.Finished)
+        //    {
+        //        CalculateElapsedTime(competitorCourseSummary);
+        //        CalculateScore(competitorCourseSummary);
 
-            }
+        //    }
 
-        }
+        //}
 
-        private static void CalculateScore(CompetitorResultSummary competitorCourseSummary)
-        {
-            var competitorCourse = "A";
-            var isScoreCourse = true;
-            if (isScoreCourse)
-                CalculateScoreCoursePoints();
-        }
+        //private static void CalculateScore(CompetitorResultSummary competitorCourseSummary)
+        //{
+        //    var competitorCourse = "A";
+        //    var isScoreCourse = true;
+        //    if (isScoreCourse)
+        //        CalculateScoreCoursePoints();
+        //}
 
-        private static void CalculateScoreCoursePoints()
-        {
-            var totPoints = 0;
-            foreach(var coursePunch in coursePunches)
-            {
-                totPoints += GetCoursePunchScore(coursePunch.CoursePunchName);
-            }
-        }
+        //private static void CalculateScoreCoursePoints()
+        //{
+        //    var totPoints = 0;
+        //    foreach(var coursePunch in coursePunches)
+        //    {
+        //        totPoints += GetCoursePunchScore(coursePunch.CoursePunchName);
+        //    }
+        //}
 
         private static int GetCoursePunchScore(string coursePunchName)
         {
@@ -86,12 +86,12 @@ namespace OR_Results
 
         }
 
-        private static void CalculateElapsedTime(CompetitorResultSummary competitorCourseSummary)
-        {
-            competitorCourseSummary.FinishTime = ParseCourseAndTime(coursePunches.Where(s => s.CoursePunchName == "F").FirstOrDefault().CoursePunchTime);
-            competitorCourseSummary.ElapsedTime = (competitorCourseSummary.FinishTime == null)? null:
-                competitorCourseSummary.ElapsedTime = competitorCourseSummary.FinishTime - competitorCourseSummary.StartTime;
-        }
+        //private static void CalculateElapsedTime(CompetitorResultSummary competitorCourseSummary)
+        //{
+        //    competitorCourseSummary.FinishTime = ParseCourseAndTime(coursePunches.Where(s => s.CoursePunchName == "F").FirstOrDefault().CoursePunchTime);
+        //    competitorCourseSummary.ElapsedTime = (competitorCourseSummary.FinishTime == null)? null:
+        //        competitorCourseSummary.ElapsedTime = competitorCourseSummary.FinishTime - competitorCourseSummary.StartTime;
+        //}
 
         private static DateTime ParseCourseAndTime(string courseAndTime)
         {
@@ -105,31 +105,31 @@ namespace OR_Results
             return DateTime.Parse(theTime);
         }
 
-        private static int GetCompetitorStatus(List<CoursePunch> coursePunches)
-        {
-            if (coursePunches.Where(s => s.CoursePunchName == "F").FirstOrDefault() != null)
-                return (int)Status.Finished;
-            else if ((coursePunches.Where(s => s.CoursePunchName == "F").FirstOrDefault() == null)
-                    && (coursePunches.Where(s => s.CoursePunchName == "S").FirstOrDefault() != null))
-                return (int)Status.Started;
-            else  return (int)Status.DidNotStart;
-        }
+        //private static int GetCompetitorStatus(List<CoursePunch> coursePunches)
+        //{
+        //    if (coursePunches.Where(s => s.CoursePunchName == "F").FirstOrDefault() != null)
+        //        return (int)Status.Finished;
+        //    else if ((coursePunches.Where(s => s.CoursePunchName == "F").FirstOrDefault() == null)
+        //            && (coursePunches.Where(s => s.CoursePunchName == "S").FirstOrDefault() != null))
+        //        return (int)Status.Started;
+        //    else  return (int)Status.DidNotStart;
+        //}
 
-        private static void DisplayResults()
-        {
-            var doc = new HtmlDocument();
-            doc.LoadHtml(@" < html >< body >< div id = 'foo' > text </ div ></ body ></ html > ");
-            var div = doc.GetElementbyId("foo");
+        //private static void DisplayResults()
+        //{
+        //    var doc = new HtmlDocument();
+        //    doc.LoadHtml(@" < html >< body >< div id = 'foo' > text </ div ></ body ></ html > ");
+        //    var div = doc.GetElementbyId("foo");
 
-            // Show info
-            System.Console.WriteLine(div.OuterHtml);
+        //    // Show info
+        //    System.Console.WriteLine(div.OuterHtml);
 
-            // Show info
-            //FiddleHelper.WriteTable(new List<string>() { div.OuterHtml });
+        //    // Show info
+        //    //FiddleHelper.WriteTable(new List<string>() { div.OuterHtml });
 
-            // Show info
-            //FiddleHelper.WriteTable(new List<HtmlAgilityPack.HtmlNode>() { div });
-        }
+        //    // Show info
+        //    //FiddleHelper.WriteTable(new List<HtmlAgilityPack.HtmlNode>() { div });
+        //}
 
         private static void GetResultsData()
         {
@@ -171,45 +171,43 @@ namespace OR_Results
         private static void ParseResults(List<CompetitorResult> records)
         {
             //let's parse the results
+            coursePunches = new List<CoursePunch>();
 
-           
             foreach (var record in records)
             {
-                coursePunches = new List<CoursePunch>();
-                var startPunch = new CoursePunch
-                {
-                    SI = record.SI,
-                    CoursePunchName = "S",
-                    CoursePunchTime = record.StartPunchTime
-                };
-
-                coursePunches.Add(startPunch);
-
                 bool isControlNumber = false;
+
                 var coursePunch = new CoursePunch();
+                coursePunch.SI = record.SI;
+                var competitorControls = new List<CompetitorControl>();
+                var competitorControl = new CompetitorControl();
 
-                foreach (var item in record.ControlPunches)
+                foreach (var row in record.ControlPunches)
                 {
-                    coursePunch.SI = record.SI;
-
-                    if (!isControlNumber)
+                    if (isControlNumber)
                     {
-                        coursePunch.CoursePunchTime = item;
-                        isControlNumber = true;
+                        competitorControl.CoursePunchName = row;
+                        isControlNumber = false;
+                        competitorControl = new CompetitorControl();
+
                     }
                     else
                     {
-                        coursePunch.CoursePunchName = item;
-                        isControlNumber = false;
-                        coursePunches.Add(coursePunch);
-                        coursePunch = new CoursePunch();
+                        competitorControl.CoursePunchTime = row;
+                        isControlNumber = true;
+                        competitorControls.Add(competitorControl);
                     }
                 }
+                coursePunch.CompetitorControls = competitorControls;
+
+                //adjust the last record
+                var lastPunch = competitorControls.LastOrDefault();
+                lastPunch.CoursePunchName = "F";
+
+                coursePunches.Add(coursePunch);
             }
 
-            //adjust the last record
-            var lastPunch = coursePunches.LastOrDefault();
-            lastPunch.CoursePunchName = "F";
+            
 
         }
 
@@ -307,35 +305,14 @@ namespace OR_Results
         }
     }
 
-    class CompetitorResult
-    {
-        public int SI { get; set; }
-        public string Punch1 { get; set; }
-        public string Punch2 { get; set; }
-        public string StartPunchTime { get; set; }
-        public List<string> ControlPunches { get; set; }
-
-    }
-
-    class CompetitorResultSummary
-    {
-        public int SI { get; set; }
-        public int Status { get; set; }
-        public DateTime StartTime { get; set; }
-        public DateTime? FinishTime { get; set; }
-        public TimeSpan? ElapsedTime { get; set; }
-        public int Score { get; set; }
-    }
-
-    class ControlPunch
-    {
-        public int EventId { get; set; }
-        public DateTime PunchDateTime { get; set; }
-    }
-
     class CoursePunch
     {
         public int SI { get; set; }
+        public List<CompetitorControl> CompetitorControls { get; set; }
+    }
+
+    class CompetitorControl
+    {
         public string CoursePunchName { get; set; }
         public string CoursePunchTime { get; set; }
     }
