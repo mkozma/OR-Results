@@ -1,13 +1,17 @@
 ﻿using CsvHelper;
+using HtmlAgilityPack;
 //using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace OR_Results
 {
@@ -17,17 +21,31 @@ namespace OR_Results
         private static List<CoursePunch> coursePunches;
         private static List<CompetitorResultSummary> competitorCourseSummaries;
         private static List<Control> controls;
+        private static List<Competitor> competitors;
+        private static List<Course> courses;
+
         private static string Course;
+
+        public static List<CompetitorResultSummary> CompetitorCourseSummaries { get; set; }
 
         static void Main(string[] args)
         {
-            GetCourseData();
+            Initialise();
             GetResultsData();
 
             Results();
         }
 
-        private static void GetCourseData()
+        private static void Initialise()
+        {
+            CompetitorCourseSummaries = new List<CompetitorResultSummary>();
+            ReadControlsData();
+            ReadCompetitorsData();
+            ReadCoursesData();
+        }
+
+       
+        private static void ReadControlsData()
         {
             using (var reader = new StreamReader(@"C:\Users\mkozm\Or\2\Controls.csv"))
             using (var csv = new CsvReader(reader))
@@ -38,98 +56,186 @@ namespace OR_Results
             }
         }
 
+        private static void ReadCompetitorsData()
+        {
+            using (var reader = new StreamReader(@"C:\Users\mkozm\Or\2\Competitors.csv"))
+            using (var csv = new CsvReader(reader))
+            {
+                csv.Configuration.Delimiter = ";";
+                csv.Configuration.HasHeaderRecord = false;
+                competitors = csv.GetRecords<Competitor>().ToList();
+            }
+        }
+
+        private static void ReadCoursesData()
+        {
+            using (var reader = new StreamReader(@"C:\Users\mkozm\Or\2\Courses.csv"))
+            using (var csv = new CsvReader(reader))
+            {
+                csv.Configuration.Delimiter = ",";
+                csv.Configuration.HasHeaderRecord = false;
+                courses = csv.GetRecords<Course>().ToList();
+            }
+        }
+
         private static void Results()
         {
-            //GenerateResults();
-            //DisplayResults();
+            GenerateResults();
+            SortResults();
+            DisplayResults();
         }
 
-        //private static void GenerateResults()
-        //{
-        //    var competitorCourseSummaries = new List<CompetitorResultSummary>();
-
-        //    var competitorCourseSummary = new CompetitorResultSummary();
-        //    competitorCourseSummary.SI = coursePunches.Take(1).DefaultIfEmpty().FirstOrDefault().SI;
-        //    competitorCourseSummary.StartTime = ParseCourseAndTime(coursePunches.Where(s => s.CoursePunchName == "S").FirstOrDefault().CoursePunchTime);
-        //    competitorCourseSummary.Status = GetCompetitorStatus(coursePunches);
-        //    if(competitorCourseSummary.Status == (int)Status.Finished)
-        //    {
-        //        CalculateElapsedTime(competitorCourseSummary);
-        //        CalculateScore(competitorCourseSummary);
-
-        //    }
-
-        //}
-
-        //private static void CalculateScore(CompetitorResultSummary competitorCourseSummary)
-        //{
-        //    var competitorCourse = "A";
-        //    var isScoreCourse = true;
-        //    if (isScoreCourse)
-        //        CalculateScoreCoursePoints();
-        //}
-
-        //private static void CalculateScoreCoursePoints()
-        //{
-        //    var totPoints = 0;
-        //    foreach(var coursePunch in coursePunches)
-        //    {
-        //        totPoints += GetCoursePunchScore(coursePunch.CoursePunchName);
-        //    }
-        //}
-
-        private static int GetCoursePunchScore(string coursePunchName)
+        private static void SortResults()
         {
-            if ((coursePunchName=="S")|| (coursePunchName=="F"))
-                return 0;
-            return controls.Where(s => s.Name == coursePunchName).FirstOrDefault().Score;
+            CompetitorCourseSummaries = CompetitorCourseSummaries
+                .OrderBy(c=>c.CourseId)
+                .ThenBy(c=>c.Status)
+                .ThenByDescending(c => c.Score)
+                .ThenBy(c => c.ElapsedTime)
+                .ToList();
 
+            PrintResults();
         }
 
-        //private static void CalculateElapsedTime(CompetitorResultSummary competitorCourseSummary)
-        //{
-        //    competitorCourseSummary.FinishTime = ParseCourseAndTime(coursePunches.Where(s => s.CoursePunchName == "F").FirstOrDefault().CoursePunchTime);
-        //    competitorCourseSummary.ElapsedTime = (competitorCourseSummary.FinishTime == null)? null:
-        //        competitorCourseSummary.ElapsedTime = competitorCourseSummary.FinishTime - competitorCourseSummary.StartTime;
-        //}
-
-        private static DateTime ParseCourseAndTime(string courseAndTime)
+        private static void PrintResults()
         {
-            int index = courseAndTime.IndexOf(':');
-            Course = courseAndTime.Substring(0, index);
-            var theRest = courseAndTime.Substring(index + 1, courseAndTime.Length - Course.Length-1);
-            index = theRest.IndexOf(':');
-            var theDay = theRest.Substring(0, index);
-            var theTime = theRest.Substring(index + 1, theRest.Length - theDay.Length-1);
+            var score = string.Empty;
+            var courseCount = 0;
 
-            return DateTime.Parse(theTime);
+            var prevCourse = string.Empty;
+            for (int i = 1; i<= CompetitorCourseSummaries.Count; i++)
+            {
+                courseCount = (prevCourse == CompetitorCourseSummaries[i - 1].CourseId) ? ++courseCount :  1;
+                Console.Write("{0} {1} {2} {3} {4} {5} {6} {7}",
+                    i.ToString(),
+                    courseCount.ToString(),
+                    CompetitorCourseSummaries[i - 1].CourseId,
+                    GetEnumValue(CompetitorCourseSummaries[i - 1].Status),
+                    CompetitorCourseSummaries[i - 1].SI,
+                    GetName(CompetitorCourseSummaries[i - 1].SI),
+                    score = (CompetitorCourseSummaries[i - 1].Score == 0) ? string.Empty : CompetitorCourseSummaries[i - 1].Score.ToString(),
+                    CompetitorCourseSummaries[i-1].ElapsedTime.ToString());
+                Console.WriteLine();
+                prevCourse = CompetitorCourseSummaries[i - 1].CourseId;
+            }
+            Console.ReadLine();
         }
 
-        //private static int GetCompetitorStatus(List<CoursePunch> coursePunches)
-        //{
-        //    if (coursePunches.Where(s => s.CoursePunchName == "F").FirstOrDefault() != null)
-        //        return (int)Status.Finished;
-        //    else if ((coursePunches.Where(s => s.CoursePunchName == "F").FirstOrDefault() == null)
-        //            && (coursePunches.Where(s => s.CoursePunchName == "S").FirstOrDefault() != null))
-        //        return (int)Status.Started;
-        //    else  return (int)Status.DidNotStart;
-        //}
+        private static string GetEnumValue(int value)
+        {
+            Status enumDisplayStatus = (Status)value;
+            return enumDisplayStatus.ToString();
+        }
 
-        //private static void DisplayResults()
-        //{
-        //    var doc = new HtmlDocument();
-        //    doc.LoadHtml(@" < html >< body >< div id = 'foo' > text </ div ></ body ></ html > ");
-        //    var div = doc.GetElementbyId("foo");
+        private static object GetName(int sI)
+        {
+            return competitors.FirstOrDefault(c => c.SI == sI).Name;
+        }
 
-        //    // Show info
-        //    System.Console.WriteLine(div.OuterHtml);
+        private static void GenerateResults()
+        {
+            foreach (var competitorPunches in coursePunches)
+            {
+                var competitorCourseSummary = new CompetitorResultSummary();
+                competitorCourseSummary.SI = competitorPunches.SI;
 
-        //    // Show info
-        //    //FiddleHelper.WriteTable(new List<string>() { div.OuterHtml });
+                competitorCourseSummary.CourseId =
+                    (GetCompetitorCourse(competitorCourseSummary) == null)
+                    ? string.Empty
+                    : GetCompetitorCourse(competitorCourseSummary);
 
-        //    // Show info
-        //    //FiddleHelper.WriteTable(new List<HtmlAgilityPack.HtmlNode>() { div });
-        //}
+                competitorCourseSummary.StartTime = competitorPunches.CompetitorControls[0].CoursePunchTime;
+                if(competitorCourseSummary.StartTime == TimeSpan.Zero)
+                {
+                    competitorCourseSummary.Status = (int)Status.DidNotStart;
+                }
+                else
+                {
+                    if (competitorPunches.CompetitorControls.Any(s => s.CoursePunchName == "F"))
+                    {
+                        competitorCourseSummary.FinishTime = competitorPunches.CompetitorControls.SingleOrDefault(s => s.CoursePunchName == "F").CoursePunchTime;
+                        competitorCourseSummary.Status = (int)Status.Finished;
+                        CalculateElapsedTime(competitorCourseSummary);
+
+                        CalculateScore(competitorPunches.CompetitorControls, competitorCourseSummary);
+                    }
+                    else
+                    {
+                        GetStatus(competitorCourseSummary);
+                    }
+                }
+                CompetitorCourseSummaries.Add(competitorCourseSummary);
+            }
+        }
+
+        private static void GetStatus(CompetitorResultSummary competitorCourseSummary)
+        {
+            competitorCourseSummary.FinishTime = null;
+
+            competitorCourseSummary.Status = (int)Status.Started;
+        }
+
+        private static void CalculateScore(List<CompetitorControl> competitorPunches, CompetitorResultSummary competitorCourseSummary)
+        {
+            competitorCourseSummary.CourseId = GetCompetitorCourse(competitorCourseSummary);
+            if ((IsScoreCourse(competitorCourseSummary.CourseId)) && (competitorCourseSummary.FinishTime != null))
+                competitorCourseSummary.Score = CalculateScoreCoursePoints(competitorPunches);
+        }
+
+        private static bool IsScoreCourse(string courseId)
+        {
+            if (courses.First(c => c.CourseId == courseId).CourseType == "Score")
+                return true;
+            return false;
+        }
+
+        private static string GetCompetitorCourse(CompetitorResultSummary competitorCourseSummary)
+        {
+            return competitors.FirstOrDefault(c => c.SI == competitorCourseSummary.SI).CourseId;
+        }
+
+        private static int CalculateScoreCoursePoints(List<CompetitorControl> coursePunches)
+        {
+            var amount = 0;
+            foreach (var competitorControl in coursePunches)
+            {
+                var control = controls.FirstOrDefault(s => s.Name == competitorControl.CoursePunchName);
+                amount += (control == null) ? 0 : control.Score;
+            }
+            return amount;
+        }
+
+        private static void CalculateElapsedTime(CompetitorResultSummary competitorCourseSummary)
+        {
+                competitorCourseSummary.ElapsedTime = competitorCourseSummary.FinishTime - competitorCourseSummary.StartTime;
+        }
+
+        private static void DisplayResults()
+        {
+            var doc = new HtmlDocument();
+            var html = new StringBuilder();
+          
+            html.Append("<html>");
+            html.Append("<head>");
+            html.Append("</head>");
+            html.Append("<body>");
+            html.Append("<h1>OR Results</h1>");
+            html.Append("<script src='js/jquery.min.js'></script>");
+            html.Append("<script src='js/bootstrap.min.js'></script>");
+            html.Append("</body>");
+            html.Append("</html>");
+
+            doc.LoadHtml(html.ToString());
+
+            FileStream sw = new FileStream("FileStream.html", FileMode.Create);
+
+            var currentDir = @"C:\inetpub\wwwroot" + @"\";
+
+            var path = currentDir + "FileStream.html";
+
+            doc.Save(path);
+            System.Diagnostics.Process.Start(path);
+        }
 
         private static void GetResultsData()
         {
@@ -140,162 +246,92 @@ namespace OR_Results
                 csv.Configuration.HasHeaderRecord = false;
                 records = csv.GetRecords<CompetitorResult>().ToList();
             }
-
             ParseResults(records);
         }
-
-        //private static void ParseResults(List<CompetitorResult> records)
-        //{
-        //    coursePunches = new List<CoursePunch>();
-        //    foreach (var record in records)
-        //    {
-        //        bool isControlNumber = false;
-        //        foreach (var item in record.ControlPunches)
-        //        {
-        //            var coursePunch = new CoursePunch();
-        //            if (!isControlNumber)
-        //            {
-        //                coursePunch.CoursePunchTime = item;
-        //                isControlNumber = true;
-        //            }
-        //            else
-        //            {
-        //                coursePunch.CoursePunchName = item;
-        //                isControlNumber = false;
-        //                coursePunches.Add(coursePunch);
-        //            }
-        //        }
-        //    }
-        //}
 
         private static void ParseResults(List<CompetitorResult> records)
         {
             //let's parse the results
+           
             coursePunches = new List<CoursePunch>();
 
             foreach (var record in records)
             {
-                bool isControlNumber = false;
-
                 var coursePunch = new CoursePunch();
                 coursePunch.SI = record.SI;
                 var competitorControls = new List<CompetitorControl>();
                 var competitorControl = new CompetitorControl();
 
+                var startCompetitorControl = new CompetitorControl
+                {
+                    CoursePunchName = "S",
+                    CoursePunchTime = ParseControlPunch(record.StartPunchTime)
+                };
+                competitorControls.Add(startCompetitorControl);
+
+                var finishCompetitorControl = new CompetitorControl
+                {
+                    CoursePunchName = "F",
+                    CoursePunchTime = ParseControlPunch(record.FinishPunchTime)
+                };
+                competitorControls.Add(finishCompetitorControl);
+
+
                 foreach (var row in record.ControlPunches)
                 {
-                    if (isControlNumber)
-                    {
-                        competitorControl.CoursePunchName = row;
-                        isControlNumber = false;
-                        competitorControl = new CompetitorControl();
-
-                    }
-                    else
-                    {
-                        competitorControl.CoursePunchTime = row;
-                        isControlNumber = true;
-                        competitorControls.Add(competitorControl);
-                    }
+                        int number;
+                        if (Int32.TryParse(row, out number)== true)
+                        {
+                            competitorControl.CoursePunchName = row;
+                            competitorControl = new CompetitorControl{  CoursePunchName = row };
+                        }
+                        else
+                        {
+                            if (!string.IsNullOrEmpty(row))
+                            {
+                                competitorControl.CoursePunchTime = ParseControlPunch(row);
+                                competitorControls.Add(competitorControl);
+                            }
+                        }
                 }
                 coursePunch.CompetitorControls = competitorControls;
 
-                //adjust the last record
-                var lastPunch = competitorControls.LastOrDefault();
-                lastPunch.CoursePunchName = "F";
-
                 coursePunches.Add(coursePunch);
             }
-
-            
-
         }
 
-        private static void ParsePunch(string item)
-        {
-            var controlPunch = new ControlPunch()
-            {
-                EventId = Convert.ToInt16(ParseEventId(item)),
-                PunchDateTime = Convert.ToDateTime(ParseControlPunch(item))
-            };
-        }
-
-        private static DateTime ParseControlPunch(string item)
+        private static TimeSpan ParseControlPunch(string item)
         {
             int index = item.IndexOf(':');
             string theDateStr = item.Substring(index + 1, item.Length - 2);
-            DateTime dt = ParseDateTime(theDateStr);
-            return dt;
+
+            return ParseDateTime(item);
         }
 
-        private static DateTime ParseDateTime(string dateTime)
+        private static TimeSpan ParseDateTime(string dateTime)
         {
-            var today = DateTime.Today;            
+            char semiColon = ':';
+            char hyphen = '-';
 
-            dateTime = ReplaceFirstOccurence(":", " ", dateTime);
+            if (dateTime.Contains(hyphen) == true) { return new TimeSpan(0, 0, 0); }
 
-            var dt = DateTime.ParseExact(dateTime, "ddd HH:mm:ss",
-                               CultureInfo.InvariantCulture);
+            var index = dateTime.IndexOf(semiColon);
+            var course = dateTime.Substring(0, index);
+            var theRest = dateTime.Substring(index + 1, dateTime.Length-course.Length - 1);
 
-            //int index = dateTime.IndexOf(':');
-            //DateTime newDate = new DateTime();
-            //newDate = Convert.ToDateTime(dateTime.Substring(0, index));
-            return dt;
-        }
+            index = theRest.IndexOf(semiColon);
+            var day = theRest.Substring(0, index);
+            theRest = theRest.Substring(index + 1, theRest.Length- day.Length-1);
 
-        private static string ParseDay(string dateTime)
-        {
-            //var dayLong = ParseDay(dateTime);
-            
+            index = theRest.IndexOf(semiColon);
+            var hours = theRest.Substring(0, index);
+            theRest = theRest.Substring(index + 1, theRest.Length - hours.Length - 1);
 
+            index = theRest.IndexOf(semiColon);
+            var minutes = theRest.Substring(0, index);
+            var seconds = theRest.Substring(index + 1, theRest.Length - minutes.Length - 1);
 
-            string dayLong = string.Empty;
-            int index = dateTime.IndexOf(':');
-            string dayShort = dateTime.Substring(0, index);
-            string theRestOfTheString = dateTime.Substring(index, dateTime.Length - dayShort.Length);
-            switch (dayShort)
-            {
-                case "Sun":
-                    dayLong = "Sunday";
-                    //DateTime theDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, DateTime.Today.DayOfWeek);
-                    break;
-
-                case "Mon":
-                    dayLong = "Monday";
-                    break;
-
-                case "Tue":
-                    dayLong = "Tuesday";
-                    break;
-
-                case "Wed":
-                    dayLong = "Wednesday";
-                    break;
-
-                case "Thu":
-                    dayLong = "Thursday";
-                    break;
-
-                case "Fri":
-                    dayLong = "Friday";
-                    break;
-                case "Sat":
-                    dayLong = "Saturday";
-                    break;
-
-                default:
-                    dayLong = "";
-                    break;
-            }
-            
-
-            return dayLong;
-        }
-
-        private static string ReplaceFirstOccurence(string wordToReplace, string replaceWith, string input)
-        {
-            Regex r = new Regex(wordToReplace, RegexOptions.IgnoreCase);
-            return r.Replace(input, replaceWith, 1);
+            return new TimeSpan(Convert.ToInt16(hours), Convert.ToInt16(minutes), Convert.ToInt16(seconds));
         }
 
         private static string ParseEventId(string item)
@@ -314,7 +350,7 @@ namespace OR_Results
     class CompetitorControl
     {
         public string CoursePunchName { get; set; }
-        public string CoursePunchTime { get; set; }
+        public TimeSpan CoursePunchTime { get; set; }
     }
 
     class Control
@@ -327,13 +363,57 @@ namespace OR_Results
         public bool Field4 { get; set; }
     }
 
+    class Course
+    {
+        public string CourseId { get; set; }
+        public string CourseLength { get; set; }
+        public string CourseClimb { get; set; }
+        public string Field4 { get; set; }
+        public string CourseType { get; set; }
+        public string Field6 { get; set; }
+        public string Field7 { get; set; }
+        public string Field8 { get; set; }
+        public string Field9 { get; set; }
+        public string Field10 { get; set; }
+        public string Field11 { get; set; }
+        public string Field12 { get; set; }
+        public string Field13 { get; set; }
+        public string Field14 { get; set; }
+        public string Field15 { get; set; }
+        public string Field16 { get; set; }
+        public string Field17 { get; set; }
+
+    }
+
     enum Status
     {
-        NotStarted,
-        Started,
         Finished,
-        DidNotStart,
+        Started,
+        Mispunch,
         DidNotFinish,
-        Mispunch
+        DidNotStart
+    }
+
+    public class Competitor
+    {
+        public int Id { get; set; }
+        public int SI { get; set; }
+        public string Name { get; set; }
+        public string Club { get; set; }
+        public string CourseId { get; set; }
+        public bool Field1 { get; set; }
+        public string CourseName { get; set; }
+        public int Field2 { get; set; }
+        public int Field3 { get; set; }
+        public int Field4 { get; set; }
+        public bool Field5 { get; set; }
+        public string Field6 { get; set; }
+        public int Field7 { get; set; }
+        public int Field8 { get; set; }
+        public int Field9 { get; set; }
+        public int Field10 { get; set; }
+        public string Field11 { get; set; }
+        public int Field12 { get; set; }
+        public bool Field13 { get; set; }
     }
 }
