@@ -26,6 +26,8 @@ namespace OR_Results
 
         private static string Course;
 
+        private const string DATA_PATH = @"C:\Users\mkozm\Or\21\";
+
         public static List<CompetitorResultSummary> CompetitorCourseSummaries { get; set; }
 
         static void Main(string[] args)
@@ -47,7 +49,7 @@ namespace OR_Results
        
         private static void ReadControlsData()
         {
-            using (var reader = new StreamReader(@"C:\Users\mkozm\Or\2\Controls.csv"))
+            using (var reader = new StreamReader(DATA_PATH + "Controls.csv"))
             using (var csv = new CsvReader(reader))
             {
                 csv.Configuration.Delimiter = ",";
@@ -58,7 +60,7 @@ namespace OR_Results
 
         private static void ReadCompetitorsData()
         {
-            using (var reader = new StreamReader(@"C:\Users\mkozm\Or\2\Competitors.csv"))
+            using (var reader = new StreamReader(DATA_PATH + "Competitors.csv"))
             using (var csv = new CsvReader(reader))
             {
                 csv.Configuration.Delimiter = ";";
@@ -69,7 +71,7 @@ namespace OR_Results
 
         private static void ReadCoursesData()
         {
-            using (var reader = new StreamReader(@"C:\Users\mkozm\Or\2\Courses.csv"))
+            using (var reader = new StreamReader(DATA_PATH+ "Courses.csv"))
             using (var csv = new CsvReader(reader))
             {
                 csv.Configuration.Delimiter = ",";
@@ -239,7 +241,7 @@ namespace OR_Results
 
         private static void GetResultsData()
         {
-            using (var reader = new StreamReader(@"C:\Users\mkozm\Or\2\Results.csv"))
+            using (var reader = new StreamReader(DATA_PATH + "Results.csv"))
             using (var csv = new CsvReader(reader))
             {
                 csv.Configuration.Delimiter = ";";
