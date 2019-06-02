@@ -29,12 +29,12 @@ namespace OR_Results
         public int Field12 { get; set; }
         public bool Field13 { get; set; }
 
-        [IgnoreAttribute]
-        public List<Competitor> Competitors { get; set; }
+        //[IgnoreAttribute]
+        //public List<Competitor> Competitors { get; set; }
     }
 
-    public string GetCompetitorCourse(CompetitorResultSummary competitorCourseSummary)
-    {
-        return Competitors.FirstOrDefault(c => c.SI == competitorCourseSummary.SI).CourseId;
-    }
+    //public string GetCompetitorCourse(CompetitorResultSummary competitorCourseSummary)
+    //{
+    //    return Competitors.FirstOrDefault(c => c.SI == competitorCourseSummary.SI).CourseId;
+    //}
 }

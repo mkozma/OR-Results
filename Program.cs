@@ -19,11 +19,12 @@ namespace OR_Results
     {
         private static List<CompetitorResult> records;
         private static List<CoursePunch> coursePunches;
-        private static List<CompetitorResultSummary> competitorCourseSummaries;
         private static List<Control> controls;
         private static List<Competitor> competitors;
         private static List<Course> courses;
+        private static List<Competition> competition;
 
+        private static List<CompetitorResultSummary> competitorCourseSummaries;
         private static string Course;
 
         private const string DATA_PATH = @"C:\Users\mkozm\Or\21\";
@@ -33,54 +34,46 @@ namespace OR_Results
         static void Main(string[] args)
         {
             Initialise();
-            GetResultsData();
+            ParseResults(records);
+            ManipulateData();
+            PerformResults();
+        }
 
-            Results();
+        private static void ManipulateData()
+        {
+            RemoveSequentialPunches();
+        }
+
+        private static void RemoveSequentialPunches()
+        {
+            
+            foreach (var competitor in coursePunches)
+            {
+                var newControlPuches = new List<CompetitorControl>();
+                foreach (var competitorControl in competitor.CompetitorControls)
+                {
+                    if ((newControlPuches.Count == 0) || (newControlPuches.Last().CoursePunchName != competitorControl.CoursePunchName))
+                    {
+                        newControlPuches.Add(competitorControl);
+                    }
+                }
+                competitor.CompetitorControls = newControlPuches;
+            }
         }
 
         private static void Initialise()
         {
+            competition = new CSVHelper<Competition>().ReadData(DATA_PATH + "competition.csv", new Competition(),";").ToList();
+            controls = new CSVHelper<Control>().ReadData(DATA_PATH + "controls.csv", new Control()).ToList();
+            competitors = new CSVHelper<Competitor>().ReadData(DATA_PATH + "competitors.csv", new Competitor(), ";").ToList();
+            courses = new CSVHelper<Course>().ReadData(DATA_PATH + "courses.csv", new Course()).ToList();
+
             CompetitorCourseSummaries = new List<CompetitorResultSummary>();
-            ReadControlsData();
-            ReadCompetitorsData();
-            ReadCoursesData();
+
+            records = new CSVHelper<CompetitorResult>().ReadData(DATA_PATH + "results.csv", new CompetitorResult(), ";").ToList();
         }
 
-       
-        private static void ReadControlsData()
-        {
-            using (var reader = new StreamReader(DATA_PATH + "Controls.csv"))
-            using (var csv = new CsvReader(reader))
-            {
-                csv.Configuration.Delimiter = ",";
-                csv.Configuration.HasHeaderRecord = false;
-                controls = csv.GetRecords<Control>().ToList();
-            }
-        }
-
-        private static void ReadCompetitorsData()
-        {
-            using (var reader = new StreamReader(DATA_PATH + "Competitors.csv"))
-            using (var csv = new CsvReader(reader))
-            {
-                csv.Configuration.Delimiter = ";";
-                csv.Configuration.HasHeaderRecord = false;
-                competitors = csv.GetRecords<Competitor>().ToList();
-            }
-        }
-
-        private static void ReadCoursesData()
-        {
-            using (var reader = new StreamReader(DATA_PATH+ "Courses.csv"))
-            using (var csv = new CsvReader(reader))
-            {
-                csv.Configuration.Delimiter = ",";
-                csv.Configuration.HasHeaderRecord = false;
-                courses = csv.GetRecords<Course>().ToList();
-            }
-        }
-
-        private static void Results()
+        private static void PerformResults()
         {
             GenerateResults();
             SortResults();
@@ -239,18 +232,6 @@ namespace OR_Results
             System.Diagnostics.Process.Start(path);
         }
 
-        private static void GetResultsData()
-        {
-            using (var reader = new StreamReader(DATA_PATH + "Results.csv"))
-            using (var csv = new CsvReader(reader))
-            {
-                csv.Configuration.Delimiter = ";";
-                csv.Configuration.HasHeaderRecord = false;
-                records = csv.GetRecords<CompetitorResult>().ToList();
-            }
-            ParseResults(records);
-        }
-
         private static void ParseResults(List<CompetitorResult> records)
         {
             //let's parse the results
@@ -355,38 +336,6 @@ namespace OR_Results
         public TimeSpan CoursePunchTime { get; set; }
     }
 
-    class Control
-    {
-        public string Name { get; set; }
-        public int Field1 { get; set; }
-        public int Field2 { get; set; }
-        public int Score { get; set; }
-        public string Field3 { get; set; }
-        public bool Field4 { get; set; }
-    }
-
-    class Course
-    {
-        public string CourseId { get; set; }
-        public string CourseLength { get; set; }
-        public string CourseClimb { get; set; }
-        public string Field4 { get; set; }
-        public string CourseType { get; set; }
-        public string Field6 { get; set; }
-        public string Field7 { get; set; }
-        public string Field8 { get; set; }
-        public string Field9 { get; set; }
-        public string Field10 { get; set; }
-        public string Field11 { get; set; }
-        public string Field12 { get; set; }
-        public string Field13 { get; set; }
-        public string Field14 { get; set; }
-        public string Field15 { get; set; }
-        public string Field16 { get; set; }
-        public string Field17 { get; set; }
-
-    }
-
     enum Status
     {
         Finished,
@@ -395,27 +344,5 @@ namespace OR_Results
         DidNotFinish,
         DidNotStart
     }
-
-    public class Competitor
-    {
-        public int Id { get; set; }
-        public int SI { get; set; }
-        public string Name { get; set; }
-        public string Club { get; set; }
-        public string CourseId { get; set; }
-        public bool Field1 { get; set; }
-        public string CourseName { get; set; }
-        public int Field2 { get; set; }
-        public int Field3 { get; set; }
-        public int Field4 { get; set; }
-        public bool Field5 { get; set; }
-        public string Field6 { get; set; }
-        public int Field7 { get; set; }
-        public int Field8 { get; set; }
-        public int Field9 { get; set; }
-        public int Field10 { get; set; }
-        public string Field11 { get; set; }
-        public int Field12 { get; set; }
-        public bool Field13 { get; set; }
-    }
+   
 }

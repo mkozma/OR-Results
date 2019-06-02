@@ -16,7 +16,7 @@ namespace OR_Results
         
         public IEnumerable<T> ReadData(string filename, T t, string delimiter=",", bool hasHeaderRecord = false)
         {           
-            using (var reader = new StreamReader(FILENAME_PREFIX+filename+FILENAME_SUFFIX))
+            using (var reader = new StreamReader(filename))
             using (var csv = new CsvReader(reader))
             {
                 csv.Configuration.Delimiter = delimiter;

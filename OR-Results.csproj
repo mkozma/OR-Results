@@ -52,10 +52,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseData.cs" />
+    <Compile Include="Competition.cs" />
+    <Compile Include="Competitor.cs" />
     <Compile Include="CompetitorResult.cs" />
     <Compile Include="CompetitorResultSummary.cs" />
-    <Compile Include="ControlPunch.cs" />
     <Compile Include="CompetitorData.cs" />
+    <Compile Include="Control.cs" />
+    <Compile Include="ControlPunch.cs" />
+    <Compile Include="Course.cs" />
+    <Compile Include="CSVHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
