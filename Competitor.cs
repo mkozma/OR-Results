@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace OR_Results
 {
-    public class Competitor: CSVHelper<Competitor>
+    public class Competitor : CSVHelper<Competitor>
     {
         public int Id { get; set; }
         public int SI { get; set; }
@@ -28,13 +28,5 @@ namespace OR_Results
         public string Field11 { get; set; }
         public int Field12 { get; set; }
         public bool Field13 { get; set; }
-
-        //[IgnoreAttribute]
-        //public List<Competitor> Competitors { get; set; }
     }
-
-    //public string GetCompetitorCourse(CompetitorResultSummary competitorCourseSummary)
-    //{
-    //    return Competitors.FirstOrDefault(c => c.SI == competitorCourseSummary.SI).CourseId;
-    //}
 }
