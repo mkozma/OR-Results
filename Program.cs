@@ -22,6 +22,7 @@ namespace OR_Results
         private static List<Control> controls;
         private static List<Competitor> competitors;
         private static List<Course> courses;
+        private static List<CourseVariant> courseVariants;
         private static List<Competition> competition;
 
         private static List<CompetitorResultSummary> competitorCourseSummaries;
@@ -42,11 +43,12 @@ namespace OR_Results
         private static void ManipulateData()
         {
             RemoveSequentialPunches();
+
+            
         }
 
         private static void RemoveSequentialPunches()
         {
-            
             foreach (var competitor in coursePunches)
             {
                 var newControlPuches = new List<CompetitorControl>();
@@ -68,6 +70,8 @@ namespace OR_Results
             competitors = new CSVHelper<Competitor>().ReadData(DATA_PATH + "competitors.csv", new Competitor(), ";").ToList();
             courses = new CSVHelper<Course>().ReadData(DATA_PATH + "courses.csv", new Course()).ToList();
 
+            courseVariants = new CSVHelper<CourseVariant>().ReadData(DATA_PATH + "courseVariants.csv", new CourseVariant()).ToList();
+
             CompetitorCourseSummaries = new List<CompetitorResultSummary>();
 
             records = new CSVHelper<CompetitorResult>().ReadData(DATA_PATH + "results.csv", new CompetitorResult(), ";").ToList();
@@ -76,8 +80,80 @@ namespace OR_Results
         private static void PerformResults()
         {
             GenerateResults();
+            //CalculateResults(); //MK An attempt to simplify
             SortResults();
             DisplayResults();
+        }
+
+        private static void CalculateResults()
+        {
+            //Check for a start
+            //If a start check for a finish
+            //if a finish
+            // Calculate elapsed time
+            //If a score course, calculate score
+            //If a line course, check for correct punch order
+            CheckForStart();
+            CheckElapsedTime();
+            //ScoreControl();
+
+        }
+
+        //private static void ScoreControl()
+        //{
+        //    foreach (var competitorCourseSummary in CompetitorCourseSummaries)
+        //    {
+        //        //get class
+        //        competitorCourseSummary.CourseId = GetCompetitorCourse(competitorCourseSummary);
+        //        if ((IsScoreCourse(competitorCourseSummary.CourseId)) && (competitorCourseSummary.FinishTime != null))
+        //            competitorCourseSummary.Score = CalculateScoreCoursePoints(competitorPunches);
+
+        //    }
+        //}
+
+        private static void CheckElapsedTime()
+        {
+            foreach (var competitorCourseSummary in CompetitorCourseSummaries)
+            {
+               if (competitorCourseSummary.Status == (int)Status.Finished)
+                    CalculateElapsedTime(competitorCourseSummary);
+            }
+        }
+
+        private static void CheckForStart()
+        {
+            foreach (var competitorPunches in coursePunches)
+            {
+                var competitorCourseSummary = new CompetitorResultSummary();
+                competitorCourseSummary.SI = competitorPunches.SI;
+
+                competitorCourseSummary.CourseId =
+                    (GetCompetitorCourse(competitorCourseSummary) == null)
+                    ? string.Empty
+                    : GetCompetitorCourse(competitorCourseSummary);
+
+                competitorCourseSummary.StartTime = competitorPunches.CompetitorControls[0].CoursePunchTime;
+                if (competitorCourseSummary.StartTime == TimeSpan.Zero)
+                {
+                    competitorCourseSummary.Status = (int)Status.DidNotStart;
+                }
+                else
+                {
+                    if (competitorPunches.CompetitorControls.Any(s => s.CoursePunchName == "F"))
+                    {
+                        competitorCourseSummary.FinishTime = competitorPunches.CompetitorControls.SingleOrDefault(s => s.CoursePunchName == "F").CoursePunchTime;
+                        competitorCourseSummary.Status = (int)Status.Finished;
+                        //CalculateElapsedTime(competitorCourseSummary);
+
+                        CalculateScore(competitorPunches.CompetitorControls, competitorCourseSummary);
+                    }
+                    else
+                    {
+                        GetStatus(competitorCourseSummary);
+                    }
+                }
+                CompetitorCourseSummaries.Add(competitorCourseSummary);
+            }
         }
 
         private static void SortResults()
@@ -175,6 +251,13 @@ namespace OR_Results
             competitorCourseSummary.CourseId = GetCompetitorCourse(competitorCourseSummary);
             if ((IsScoreCourse(competitorCourseSummary.CourseId)) && (competitorCourseSummary.FinishTime != null))
                 competitorCourseSummary.Score = CalculateScoreCoursePoints(competitorPunches);
+            else
+                competitorCourseSummary.Status = CheckLineCourse(competitorPunches);
+        }
+
+        private static int CheckLineCourse(List<CompetitorControl> competitorPunches)
+        {
+            return 0;
         }
 
         private static bool IsScoreCourse(string courseId)

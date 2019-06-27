@@ -60,6 +60,7 @@
     <Compile Include="Control.cs" />
     <Compile Include="ControlPunch.cs" />
     <Compile Include="Course.cs" />
+    <Compile Include="CourseVariant.cs" />
     <Compile Include="CSVHelper.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
