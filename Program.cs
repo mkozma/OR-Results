@@ -252,12 +252,41 @@ namespace OR_Results
             if ((IsScoreCourse(competitorCourseSummary.CourseId)) && (competitorCourseSummary.FinishTime != null))
                 competitorCourseSummary.Score = CalculateScoreCoursePoints(competitorPunches);
             else
-                competitorCourseSummary.Status = CheckLineCourse(competitorPunches);
+                competitorCourseSummary.Status = CheckLineCourse(competitorCourseSummary.CourseId, competitorPunches);
         }
 
-        private static int CheckLineCourse(List<CompetitorControl> competitorPunches)
+        private static int CheckLineCourse(string courseId, List<CompetitorControl> competitorPunches)
         {
-            return 0;
+            var courseVariantList = courseVariants.FirstOrDefault(c => c.CourseId == courseId).Controls.ToList();
+            courseVariantList.RemoveAt(0);
+            courseVariantList.Reverse();
+            courseVariantList.RemoveAt(0);
+            courseVariantList.Reverse();
+
+
+            var competitorPunchesList = competitorPunches.Select(c => c.CoursePunchName).ToList();
+            var validCompetitorPunches = CheckForValidPunches(competitorPunchesList);
+
+            var isEqual = Enumerable.SequenceEqual(courseVariantList, validCompetitorPunches);
+
+            if (!isEqual)
+                return (int)Status.Mispunch;
+
+            return (int)Status.Finished;
+            
+        }
+
+        private static List<string> CheckForValidPunches(List<string> competitorPunchesList)
+        {
+            var newList = new List<string>();
+            foreach (var controlPunch in competitorPunchesList)
+            {
+                if (!new[] { "S", "F" }.Contains(controlPunch))
+                {
+                    newList.Add(controlPunch);
+                }
+            }
+            return newList;
         }
 
         private static bool IsScoreCourse(string courseId)
