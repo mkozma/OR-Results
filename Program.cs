@@ -259,21 +259,46 @@ namespace OR_Results
         {
             var courseVariantList = courseVariants.FirstOrDefault(c => c.CourseId == courseId).Controls.ToList();
             courseVariantList.RemoveAt(0);
-            courseVariantList.Reverse();
-            courseVariantList.RemoveAt(0);
-            courseVariantList.Reverse();
-
 
             var competitorPunchesList = competitorPunches.Select(c => c.CoursePunchName).ToList();
             var validCompetitorPunches = CheckForValidPunches(competitorPunchesList);
 
-            var isEqual = Enumerable.SequenceEqual(courseVariantList, validCompetitorPunches);
+            var isValid = true;
 
-            if (!isEqual)
+            isValid = CompareCoursePunchesToCompetitorPunches(courseVariantList, validCompetitorPunches, isValid);
+
+            if (!isValid)
                 return (int)Status.Mispunch;
 
             return (int)Status.Finished;
-            
+
+        }
+
+        private static bool CompareCoursePunchesToCompetitorPunches(List<string> courseVariantList, List<string> validCompetitorPunches, bool isValid)
+        {
+            int i = 1;
+            int j = 1;
+            while (i < courseVariantList.Count)
+            {
+                //for (int j = x; j< validCompetitorPunches.Count; j++)
+                while (j < validCompetitorPunches.Count)
+                {
+                    if (courseVariantList[i] == validCompetitorPunches[j])
+                    {
+                        isValid = true;
+                        i++;
+                        j++;
+                        break;
+                    }
+                    else
+                    {
+                        isValid = false;
+                        j++;
+                    }
+                }
+            }
+
+            return isValid;
         }
 
         private static List<string> CheckForValidPunches(List<string> competitorPunchesList)
