@@ -10,6 +10,7 @@ namespace OR_Results
         public string Punch2 { get; set; }
         public string StartPunchTime { get; set; }
         public string FinishPunchTime { get; set; }
+        //public string LastPunchName { get; set; }
         public List<string> ControlPunches { get; set; }
 
     }
