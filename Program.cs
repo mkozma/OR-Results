@@ -93,8 +93,8 @@ namespace OR_Results
             // Calculate elapsed time
             //If a score course, calculate score
             //If a line course, check for correct punch order
-            CheckForStart();
-            CheckElapsedTime();
+            //CheckForStart();
+            //CheckElapsedTime();
             //ScoreControl();
 
         }
@@ -120,46 +120,53 @@ namespace OR_Results
             }
         }
 
-        private static void CheckForStart()
-        {
-            foreach (var competitorPunches in coursePunches)
-            {
-                var competitorCourseSummary = new CompetitorResultSummary();
-                competitorCourseSummary.SI = competitorPunches.SI;
+        //private static void CheckForStart()
+        //{
+        //    foreach (var competitorPunches in coursePunches)
+        //    {
+        //        var competitorCourseSummary = new CompetitorResultSummary();
+        //        competitorCourseSummary.SI = competitorPunches.SI;
 
-                competitorCourseSummary.CourseId =
-                    (GetCompetitorCourse(competitorCourseSummary) == null)
-                    ? string.Empty
-                    : GetCompetitorCourse(competitorCourseSummary);
+        //        competitorCourseSummary.CourseId =
+        //            (GetCompetitorCourse(competitorCourseSummary) == null)
+        //            ? string.Empty
+        //            : GetCompetitorCourse(competitorCourseSummary);
 
-                competitorCourseSummary.StartTime = competitorPunches.CompetitorControls[0].CoursePunchTime;
-                if (competitorCourseSummary.StartTime == TimeSpan.Zero)
-                {
-                    competitorCourseSummary.Status = (int)Status.DidNotStart;
-                }
-                else
-                {
-                    if (competitorPunches.CompetitorControls.Any(s => s.CoursePunchName == "F"))
-                    {
-                        competitorCourseSummary.FinishTime = competitorPunches.CompetitorControls.SingleOrDefault(s => s.CoursePunchName == "F").CoursePunchTime;
-                        competitorCourseSummary.Status = (int)Status.Finished;
-                        //CalculateElapsedTime(competitorCourseSummary);
+        //        competitorCourseSummary.ClassId = 
+        //            (GetCompetitorClass(competitorCourseSummary)== null) 
+        //            ? string.Empty
+        //            : GetCompetitorClass(competitorCourseSummary);
 
-                        CalculateScore(competitorPunches.CompetitorControls, competitorCourseSummary);
-                    }
-                    else
-                    {
-                        GetStatus(competitorCourseSummary);
-                    }
-                }
-                CompetitorCourseSummaries.Add(competitorCourseSummary);
-            }
-        }
+        //        competitorCourseSummary.StartTime = competitorPunches.CompetitorControls[0].CoursePunchTime;
+        //        if (competitorCourseSummary.StartTime == TimeSpan.Zero)
+        //        {
+        //            competitorCourseSummary.Status = (int)Status.DidNotStart;
+        //        }
+        //        else
+        //        {
+        //            if (competitorPunches.CompetitorControls.Any(s => s.CoursePunchName == "F"))
+        //            {
+        //                competitorCourseSummary.FinishTime = competitorPunches.CompetitorControls.SingleOrDefault(s => s.CoursePunchName == "F").CoursePunchTime;
+        //                competitorCourseSummary.Status = (int)Status.Finished;
+        //                //CalculateElapsedTime(competitorCourseSummary);
+
+        //                CalculateScore(competitorPunches.CompetitorControls, competitorCourseSummary);
+        //            }
+        //            else
+        //            {
+        //                GetStatus(competitorCourseSummary);
+        //            }
+        //        }
+        //        CompetitorCourseSummaries.Add(competitorCourseSummary);
+        //    }
+        //}
 
         private static void SortResults()
         {
+            
             CompetitorCourseSummaries = CompetitorCourseSummaries
                 .OrderBy(c=>c.CourseId)
+                //.ThenBy(c=>c.ClassId)
                 .ThenBy(c=>c.Status)
                 .ThenByDescending(c => c.Score)
                 .ThenBy(c => c.ElapsedTime)
@@ -172,22 +179,34 @@ namespace OR_Results
         {
             var score = string.Empty;
             var courseCount = 0;
+            var classCount = 0;
+            var elapsedTime = string.Empty;
+            var className = string.Empty;
+
 
             var prevCourse = string.Empty;
+            var prevClass = string.Empty;
+
             for (int i = 1; i<= CompetitorCourseSummaries.Count; i++)
             {
                 courseCount = (prevCourse == CompetitorCourseSummaries[i - 1].CourseId) ? ++courseCount :  1;
-                Console.Write("{0} {1} {2} {3} {4} {5} {6} {7}",
+                classCount = (prevClass == GetCompetitorClass(CompetitorCourseSummaries[i - 1])) ? ++classCount : 1;
+                Console.Write("{0} {1} {2} {3} {4} {5} {6} {7} {8} {9}",
                     i.ToString(),
                     courseCount.ToString(),
+                    classCount.ToString(),
                     CompetitorCourseSummaries[i - 1].CourseId,
+                    className = GetCompetitorClass(CompetitorCourseSummaries[i - 1]),
                     GetEnumValue(CompetitorCourseSummaries[i - 1].Status),
                     CompetitorCourseSummaries[i - 1].SI,
                     GetName(CompetitorCourseSummaries[i - 1].SI),
                     score = (CompetitorCourseSummaries[i - 1].Score == 0) ? string.Empty : CompetitorCourseSummaries[i - 1].Score.ToString(),
-                    CompetitorCourseSummaries[i-1].ElapsedTime.ToString());
+                    elapsedTime = (CompetitorCourseSummaries[i - 1].Status == (int)Status.Finished) ? 
+                    CompetitorCourseSummaries[i-1].ElapsedTime.ToString() : string.Empty); 
                 Console.WriteLine();
                 prevCourse = CompetitorCourseSummaries[i - 1].CourseId;
+                prevClass = GetCompetitorClass(CompetitorCourseSummaries[i - 1]);
+
             }
             Console.ReadLine();
         }
@@ -215,6 +234,11 @@ namespace OR_Results
                     ? string.Empty
                     : GetCompetitorCourse(competitorCourseSummary);
 
+                competitorCourseSummary.ClassId =
+                    (GetCompetitorClass(competitorCourseSummary) == null)
+                    ? string.Empty
+                    : GetCompetitorCourse(competitorCourseSummary);
+
                 competitorCourseSummary.StartTime = competitorPunches.CompetitorControls[0].CoursePunchTime;
                 if(competitorCourseSummary.StartTime == TimeSpan.Zero)
                 {
@@ -222,9 +246,14 @@ namespace OR_Results
                 }
                 else
                 {
+                    var courseVariantlastControl = GetCourseLastControlName(competitorCourseSummary.CourseId);
+
+                    //compare the last course variant control to the competitors last control
+                    //if (courseVariantlastControl == competitorPunches.CompetitorControls[1].CoursePunchName)
                     if (competitorPunches.CompetitorControls.Any(s => s.CoursePunchName == "F"))
                     {
                         competitorCourseSummary.FinishTime = competitorPunches.CompetitorControls.SingleOrDefault(s => s.CoursePunchName == "F").CoursePunchTime;
+                        competitorCourseSummary.FinishTime = competitorPunches.CompetitorControls[1].CoursePunchTime;
                         competitorCourseSummary.Status = (int)Status.Finished;
                         CalculateElapsedTime(competitorCourseSummary);
 
@@ -237,6 +266,15 @@ namespace OR_Results
                 }
                 CompetitorCourseSummaries.Add(competitorCourseSummary);
             }
+        }
+
+        private static string GetCourseLastControlName(string courseId)
+        {
+            var courseVariant = courseVariants.FirstOrDefault(c => c.CourseId == courseId);
+            courseVariant.Controls.Reverse();
+            var lastCourseControlName = courseVariant.Controls[0];
+            courseVariant.Controls.Reverse();
+            return lastCourseControlName;
         }
 
         private static void GetStatus(CompetitorResultSummary competitorCourseSummary)
@@ -276,24 +314,18 @@ namespace OR_Results
 
         private static bool CompareCoursePunchesToCompetitorPunches(List<string> courseVariantList, List<string> validCompetitorPunches, bool isValid)
         {
-            int i = 1;
-            int j = 1;
-            while (i < courseVariantList.Count)
+            for (int i = 0; i < courseVariantList.Count; i++)
             {
-                //for (int j = x; j< validCompetitorPunches.Count; j++)
-                while (j < validCompetitorPunches.Count)
+                for (int j = i; j < validCompetitorPunches.Count; j++)
                 {
                     if (courseVariantList[i] == validCompetitorPunches[j])
                     {
                         isValid = true;
-                        i++;
-                        j++;
                         break;
                     }
                     else
                     {
                         isValid = false;
-                        j++;
                     }
                 }
             }
@@ -324,6 +356,11 @@ namespace OR_Results
         private static string GetCompetitorCourse(CompetitorResultSummary competitorCourseSummary)
         {
             return competitors.FirstOrDefault(c => c.SI == competitorCourseSummary.SI).CourseId;
+        }
+
+        private static string GetCompetitorClass(CompetitorResultSummary competitorResultSummary)
+        {
+            return competitors.FirstOrDefault(c => c.SI == competitorResultSummary.SI).ClassId;
         }
 
         private static int CalculateScoreCoursePoints(List<CompetitorControl> coursePunches)
@@ -402,7 +439,7 @@ namespace OR_Results
                         int number;
                         if (Int32.TryParse(row, out number)== true)
                         {
-                            competitorControl.CoursePunchName = row;
+                            //competitorControl.CoursePunchName = row;
                             competitorControl = new CompetitorControl{  CoursePunchName = row };
                         }
                         else
@@ -426,6 +463,11 @@ namespace OR_Results
             string theDateStr = item.Substring(index + 1, item.Length - 2);
 
             return ParseDateTime(item);
+        }
+
+        private static string ParseControlPunchName(string item)
+        {
+            return string.Empty;
         }
 
         private static TimeSpan ParseDateTime(string dateTime)
