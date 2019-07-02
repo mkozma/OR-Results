@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Security.Permissions;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -35,16 +36,63 @@ namespace OR_Results
         static void Main(string[] args)
         {
             Initialise();
+            Run();
             ParseResults(records);
             ManipulateData();
             PerformResults();
         }
 
+        [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
+        private static void Run()
+        {
+            string[] args = Environment.GetCommandLineArgs();
+
+            // If a directory is not specified, exit program.
+            if (args.Length != 2)
+            {
+                // Display the proper way to call the program.
+                Console.WriteLine("Usage: Watcher.exe (directory)");
+                return;
+            }
+
+            // Create a new FileSystemWatcher and set its properties.
+            using (FileSystemWatcher watcher = new FileSystemWatcher(DATA_PATH))
+            {
+                watcher.Path = args[1];
+
+                // Watch for changes in LastAccess and LastWrite times, and
+                // the renaming of files or directories.
+                watcher.NotifyFilter = NotifyFilters.LastAccess
+                                     | NotifyFilters.LastWrite
+                                     | NotifyFilters.FileName
+                                     | NotifyFilters.DirectoryName;
+
+                // Only watch text files.
+                watcher.Filter = "*.txt";
+
+                // Add event handlers.
+                watcher.Changed += OnChanged;
+                //watcher.Created += OnChanged;
+                //watcher.Deleted += OnChanged;
+                //watcher.Renamed += OnRenamed;
+
+                // Begin watching.
+                watcher.EnableRaisingEvents = true;
+
+                // Wait for the user to quit the program.
+                Console.WriteLine("Press 'q' to quit the sample.");
+                while (Console.Read() != 'q') ;
+            }
+        }
+
+        private static void OnChanged(object source, FileSystemEventArgs e) =>
+            // Specify what is done when a file is changed, created, or deleted.
+            Console.WriteLine($"File: {e.FullPath} {e.ChangeType}");
+
+
         private static void ManipulateData()
         {
             RemoveSequentialPunches();
-
-            
         }
 
         private static void RemoveSequentialPunches()
@@ -80,36 +128,9 @@ namespace OR_Results
         private static void PerformResults()
         {
             GenerateResults();
-            //CalculateResults(); //MK An attempt to simplify
             SortResults();
             DisplayResults();
         }
-
-        private static void CalculateResults()
-        {
-            //Check for a start
-            //If a start check for a finish
-            //if a finish
-            // Calculate elapsed time
-            //If a score course, calculate score
-            //If a line course, check for correct punch order
-            //CheckForStart();
-            //CheckElapsedTime();
-            //ScoreControl();
-
-        }
-
-        //private static void ScoreControl()
-        //{
-        //    foreach (var competitorCourseSummary in CompetitorCourseSummaries)
-        //    {
-        //        //get class
-        //        competitorCourseSummary.CourseId = GetCompetitorCourse(competitorCourseSummary);
-        //        if ((IsScoreCourse(competitorCourseSummary.CourseId)) && (competitorCourseSummary.FinishTime != null))
-        //            competitorCourseSummary.Score = CalculateScoreCoursePoints(competitorPunches);
-
-        //    }
-        //}
 
         private static void CheckElapsedTime()
         {
@@ -120,59 +141,17 @@ namespace OR_Results
             }
         }
 
-        //private static void CheckForStart()
-        //{
-        //    foreach (var competitorPunches in coursePunches)
-        //    {
-        //        var competitorCourseSummary = new CompetitorResultSummary();
-        //        competitorCourseSummary.SI = competitorPunches.SI;
-
-        //        competitorCourseSummary.CourseId =
-        //            (GetCompetitorCourse(competitorCourseSummary) == null)
-        //            ? string.Empty
-        //            : GetCompetitorCourse(competitorCourseSummary);
-
-        //        competitorCourseSummary.ClassId = 
-        //            (GetCompetitorClass(competitorCourseSummary)== null) 
-        //            ? string.Empty
-        //            : GetCompetitorClass(competitorCourseSummary);
-
-        //        competitorCourseSummary.StartTime = competitorPunches.CompetitorControls[0].CoursePunchTime;
-        //        if (competitorCourseSummary.StartTime == TimeSpan.Zero)
-        //        {
-        //            competitorCourseSummary.Status = (int)Status.DidNotStart;
-        //        }
-        //        else
-        //        {
-        //            if (competitorPunches.CompetitorControls.Any(s => s.CoursePunchName == "F"))
-        //            {
-        //                competitorCourseSummary.FinishTime = competitorPunches.CompetitorControls.SingleOrDefault(s => s.CoursePunchName == "F").CoursePunchTime;
-        //                competitorCourseSummary.Status = (int)Status.Finished;
-        //                //CalculateElapsedTime(competitorCourseSummary);
-
-        //                CalculateScore(competitorPunches.CompetitorControls, competitorCourseSummary);
-        //            }
-        //            else
-        //            {
-        //                GetStatus(competitorCourseSummary);
-        //            }
-        //        }
-        //        CompetitorCourseSummaries.Add(competitorCourseSummary);
-        //    }
-        //}
-
         private static void SortResults()
         {
             
             CompetitorCourseSummaries = CompetitorCourseSummaries
                 .OrderBy(c=>c.CourseId)
-                //.ThenBy(c=>c.ClassId)
                 .ThenBy(c=>c.Status)
                 .ThenByDescending(c => c.Score)
                 .ThenBy(c => c.ElapsedTime)
                 .ToList();
 
-            PrintResults();
+            //PrintResults();
         }
 
         private static void PrintResults()
