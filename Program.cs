@@ -25,7 +25,7 @@ namespace OR_Results
         private static List<CourseVariant> courseVariants;
         private static List<Competition> competition;
 
-        private static List<CompetitorResultSummary> competitorCourseSummaries;
+        public static List<CompetitorResultSummary> competitorCourseSummaries;
         private static string Course;
 
         private const string DATA_PATH = @"C:\Users\mkozm\Or\21\";
@@ -83,6 +83,7 @@ namespace OR_Results
             //CalculateResults(); //MK An attempt to simplify
             SortResults();
             DisplayResults();
+
         }
 
         private static void CalculateResults()
@@ -165,7 +166,7 @@ namespace OR_Results
                 .ThenBy(c => c.ElapsedTime)
                 .ToList();
 
-            PrintResults();
+            //PrintResults();
         }
 
         private static void PrintResults()
@@ -198,7 +199,7 @@ namespace OR_Results
             return enumDisplayStatus.ToString();
         }
 
-        private static object GetName(int sI)
+        public static object GetName(int sI)
         {
             return competitors.FirstOrDefault(c => c.SI == sI).Name;
         }
@@ -290,29 +291,30 @@ namespace OR_Results
 
         private static void DisplayResults()
         {
-            var doc = new HtmlDocument();
-            var html = new StringBuilder();
+            var displayResults = new DisplayResults();
+            //var doc = new HtmlDocument();
+            //var html = new StringBuilder();
           
-            html.Append("<html>");
-            html.Append("<head>");
-            html.Append("</head>");
-            html.Append("<body>");
-            html.Append("<h1>OR Results</h1>");
-            html.Append("<script src='js/jquery.min.js'></script>");
-            html.Append("<script src='js/bootstrap.min.js'></script>");
-            html.Append("</body>");
-            html.Append("</html>");
+            //html.Append("<html>");
+            //html.Append("<head>");
+            //html.Append("</head>");
+            //html.Append("<body>");
+            //html.Append("<h1>OR Results</h1>");
+            //html.Append("<script src='js/jquery.min.js'></script>");
+            //html.Append("<script src='js/bootstrap.min.js'></script>");
+            //html.Append("</body>");
+            //html.Append("</html>");
 
-            doc.LoadHtml(html.ToString());
+            //doc.LoadHtml(html.ToString());
 
-            FileStream sw = new FileStream("FileStream.html", FileMode.Create);
+            //FileStream sw = new FileStream("FileStream.html", FileMode.Create);
 
-            var currentDir = @"C:\inetpub\wwwroot" + @"\";
+            //var currentDir = @"C:\inetpub\wwwroot" + @"\";
 
-            var path = currentDir + "FileStream.html";
+            //var path = currentDir + "FileStream.html";
 
-            doc.Save(path);
-            System.Diagnostics.Process.Start(path);
+            //doc.Save(path);
+            //System.Diagnostics.Process.Start(path);
         }
 
         private static void ParseResults(List<CompetitorResult> records)
