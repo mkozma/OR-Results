@@ -7,6 +7,7 @@ namespace OR_Results
     {
         public int SI { get; set; }
         public string CourseId { get; set; }
+        public string ClassId { get; set; }
         public int Status { get; set; }
         public TimeSpan StartTime { get; set; }
         public TimeSpan? FinishTime { get; set; }
