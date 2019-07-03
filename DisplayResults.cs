@@ -19,6 +19,7 @@ namespace OR_Results
             html.Append("<head>");
             html.Append("<Link rel='stylesheet' href='/css/bootstrap.min.css'>");
             html.Append("<Link rel='stylesheet' href='/css/bootstrap-theme.min.css'>");
+            html.Append("<Link rel='stylesheet' href='/css/main.css'>");
 
             html.Append("</head>");
             html.Append("<body>");
@@ -69,7 +70,12 @@ namespace OR_Results
                 for (int i = 1; i <= course.Items.Count; i++)
                 {
                     courseCount = (prevCourse == course.course) ? ++courseCount : 1;
-                    html.Append("<tr>");
+                    html.Append("<tr");
+                    html.Append(" class='");
+                    html.Append(Shared.GetGenderFromClass( Program.GetCompetitorClass( course.Items[i-1])));
+                    html.Append("'");
+                    html.Append(">");
+
                     //html.Append("<th scope='row'>");
                     //html.Append(i.ToString());
                     //html.Append("</th>");
