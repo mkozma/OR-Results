@@ -1,17 +1,7 @@
-﻿using CsvHelper;
-using HtmlAgilityPack;
-//using HtmlAgilityPack;
+﻿//using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Net;
-using System.Reflection;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Xml;
 
 namespace OR_Results
 {
@@ -43,8 +33,6 @@ namespace OR_Results
         private static void ManipulateData()
         {
             RemoveSequentialPunches();
-
-            
         }
 
         private static void RemoveSequentialPunches()
@@ -80,37 +68,9 @@ namespace OR_Results
         private static void PerformResults()
         {
             GenerateResults();
-            //CalculateResults(); //MK An attempt to simplify
             SortResults();
             DisplayResults();
-
         }
-
-        private static void CalculateResults()
-        {
-            //Check for a start
-            //If a start check for a finish
-            //if a finish
-            // Calculate elapsed time
-            //If a score course, calculate score
-            //If a line course, check for correct punch order
-            CheckForStart();
-            CheckElapsedTime();
-            //ScoreControl();
-
-        }
-
-        //private static void ScoreControl()
-        //{
-        //    foreach (var competitorCourseSummary in CompetitorCourseSummaries)
-        //    {
-        //        //get class
-        //        competitorCourseSummary.CourseId = GetCompetitorCourse(competitorCourseSummary);
-        //        if ((IsScoreCourse(competitorCourseSummary.CourseId)) && (competitorCourseSummary.FinishTime != null))
-        //            competitorCourseSummary.Score = CalculateScoreCoursePoints(competitorPunches);
-
-        //    }
-        //}
 
         private static void CheckElapsedTime()
         {
@@ -144,7 +104,6 @@ namespace OR_Results
                     {
                         competitorCourseSummary.FinishTime = competitorPunches.CompetitorControls.SingleOrDefault(s => s.CoursePunchName == "F").CoursePunchTime;
                         competitorCourseSummary.Status = (int)Status.Finished;
-                        //CalculateElapsedTime(competitorCourseSummary);
 
                         CalculateScore(competitorPunches.CompetitorControls, competitorCourseSummary);
                     }
@@ -166,7 +125,7 @@ namespace OR_Results
                 .ThenBy(c => c.ElapsedTime)
                 .ToList();
 
-            //PrintResults();
+            PrintResults();
         }
 
         private static void PrintResults()
@@ -292,29 +251,6 @@ namespace OR_Results
         private static void DisplayResults()
         {
             var displayResults = new DisplayResults();
-            //var doc = new HtmlDocument();
-            //var html = new StringBuilder();
-          
-            //html.Append("<html>");
-            //html.Append("<head>");
-            //html.Append("</head>");
-            //html.Append("<body>");
-            //html.Append("<h1>OR Results</h1>");
-            //html.Append("<script src='js/jquery.min.js'></script>");
-            //html.Append("<script src='js/bootstrap.min.js'></script>");
-            //html.Append("</body>");
-            //html.Append("</html>");
-
-            //doc.LoadHtml(html.ToString());
-
-            //FileStream sw = new FileStream("FileStream.html", FileMode.Create);
-
-            //var currentDir = @"C:\inetpub\wwwroot" + @"\";
-
-            //var path = currentDir + "FileStream.html";
-
-            //doc.Save(path);
-            //System.Diagnostics.Process.Start(path);
         }
 
         private static void ParseResults(List<CompetitorResult> records)
