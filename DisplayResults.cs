@@ -17,11 +17,13 @@ namespace OR_Results
 
             html.Append("<html>");
             html.Append("<head>");
+            html.Append("<Link rel='stylesheet' href='/css/bootstrap.min.css'>");
+            html.Append("<Link rel='stylesheet' href='/css/bootstrap-theme.min.css'>");
+
             html.Append("</head>");
             html.Append("<body>");
             html.Append("<h1>OR Results</h1>");
-            html.Append("<script src='js/jquery.min.js'></script>");
-            html.Append("<script src='js/bootstrap.min.js'></script>");
+           
             html.Append("</body>");
             html.Append("<table class='table'>");
             html.Append("<thead>");
@@ -75,6 +77,8 @@ namespace OR_Results
                 html.Append("</tr>");
                 prevCourse = data[i - 1].CourseId;
             }
+            html.Append("<script src='/js/jquery.min.js'></script>");
+            html.Append("<script src='/js/bootstrap.min.js'></script>");
             html.Append("</body>");
 
             html.Append("</table>");
