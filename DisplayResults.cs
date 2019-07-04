@@ -17,9 +17,9 @@ namespace OR_Results
 
             html.Append("<html>");
             html.Append("<head>");
-            html.Append("<Link rel='stylesheet' href='/css/bootstrap.min.css'>");
-            html.Append("<Link rel='stylesheet' href='/css/bootstrap-theme.min.css'>");
-            html.Append("<Link rel='stylesheet' href='/css/main.css'>");
+            html.Append("<Link rel='stylesheet' href='css/bootstrap.min.css'>");
+            //html.Append("<Link rel='stylesheet' href='/css/bootstrap-theme.min.css'>");
+            html.Append("<Link rel='stylesheet' href='css/main.css'>");
 
             html.Append("</head>");
             html.Append("<body>");
@@ -35,10 +35,14 @@ namespace OR_Results
             var data = Program.CompetitorCourseSummaries.GroupBy(c => c.ClassId)
                  .Select(group => new { course = group.Key, Items = group.ToList() })
                  .ToList();
+
+            
             
             
             foreach (var course in data)
             {
+                var courseDetails = Shared.GetCourseDetails(course.course);
+
                 html.Append("<table class='table'>");
                 html.Append("<thead>");
                 html.Append("<tr>");
@@ -72,7 +76,7 @@ namespace OR_Results
                     courseCount = (prevCourse == course.course) ? ++courseCount : 1;
                     html.Append("<tr");
                     html.Append(" class='");
-                    html.Append(Shared.GetGenderFromClass( Program.GetCompetitorClass( course.Items[i-1])));
+                    html.Append(Shared.GetGenderFromClass(Program.GetCompetitorClass(course.Items[i-1])));
                     html.Append("'");
                     html.Append(">");
 
@@ -163,8 +167,8 @@ namespace OR_Results
 
            
 
-            html.Append("<script src='/js/jquery.min.js'></script>");
-            html.Append("<script src='/js/bootstrap.min.js'></script>");
+            html.Append("<script src='js/jquery.min.js'></script>");
+            html.Append("<script src='js/bootstrap.min.js'></script>");
 
 
             html.Append("</body>");

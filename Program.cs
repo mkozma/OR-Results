@@ -7,13 +7,13 @@ namespace OR_Results
 {
     class Program
     {
-        private static List<CompetitorResult> records;
-        private static List<CoursePunch> coursePunches;
-        private static List<Control> controls;
-        private static List<Competitor> competitors;
-        private static List<Course> courses;
-        private static List<CourseVariant> courseVariants;
-        private static List<Competition> competition;
+        public static List<CompetitorResult> records;
+        public static List<CoursePunch> coursePunches;
+        public static List<Control> controls;
+        public static List<Competitor> competitors;
+        public static List<Course> courses;
+        public static List<CourseVariant> courseVariants;
+        public static List<Competition> competition;
 
         public static List<CompetitorResultSummary> competitorCourseSummaries;
         private static string Course;

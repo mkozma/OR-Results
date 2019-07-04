@@ -1,13 +1,13 @@
 h1 {
     font-size: 32px;
-    color: red;
+    color: purple;
 }
 
 h3 {
     font-size: 20px;
 }
 
-Women {
-    background: red;
+tr.women {
+    background-color: red;
 }
 
