@@ -17,7 +17,7 @@ namespace OR_Results
         public static string GetGenderFromClass(string className)
         {
             var gender = string.Empty;
-            return gender = className.Contains("Women") ? "women" : string.Empty;
+            return gender = className.Contains("Women") ? "women" : "men";
         }
 
         public static Course GetCourseDetails(string courseId)

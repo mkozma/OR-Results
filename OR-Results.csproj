@@ -73,7 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="css\main.css" />
-    <Content Include="Images\Finished.png" />
+    <Content Include="Images\Finished-50.png" />
     <Content Include="Images\Start.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

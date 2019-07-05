@@ -33,14 +33,13 @@ namespace OR_Results
 
             html.Append("<div class='row'>");
             html.Append("<div class='col-lg'>");
-            html.Append("<h3>Column 1</h3>");
-
-
 
             var score = string.Empty;
             var courseCount = 0;
             var classCount = 0;
             var time = string.Empty;
+            var imageSize = "25";
+            var hyphen = '-';
 
 
             //calculate rows per column
@@ -50,7 +49,7 @@ namespace OR_Results
             int dataPerCol = (int)Math.Ceiling(dataCountDbl);
 
             var data1 = Program.CompetitorCourseSummaries.Take(dataPerCol).ToList();
-            var data2 = Program.CompetitorCourseSummaries.Skip(dataCount - dataPerCol).ToList();
+            var data2 = Program.CompetitorCourseSummaries.Skip(dataPerCol).ToList();
 
             var data = data1.GroupBy(c => c.ClassId)
                  .Select(group => new { course = group.Key, Items = group.ToList() })
@@ -60,6 +59,11 @@ namespace OR_Results
                  .Select(group => new { course = group.Key, Items = group.ToList() })
                  .ToList();
 
+            var prevCourse = string.Empty;
+            var prevClass = string.Empty;
+
+            var mensCount = 1;
+            var womensCount = 1;
 
             foreach (var course in data)
             
@@ -92,33 +96,51 @@ namespace OR_Results
                 html.Append("</thead>");
 
                 html.Append("<body>");
-                var prevCourse = string.Empty;
-                var prevClass = string.Empty;
+
 
                 for (int i = 1; i <= course.Items.Count; i++)
                 {
                     courseCount = (prevCourse == course.course) ? ++courseCount : 1;
-                    classCount = (prevClass == Program.GetCompetitorClass( course.Items[i-1])) ? ++classCount : 1;
+                    //classCount = (prevClass == Program.GetCompetitorClass( course.Items[i-1])) ? ++classCount : 1;
+                    if (courseCount == 1)
+                    {
+                        mensCount = 0;
+
+                        womensCount = 0;
+                    }
+                  
                     html.Append("<tr");
                     html.Append(" class='");
+                    
                     html.Append(Shared.GetGenderFromClass(Program.GetCompetitorClass(course.Items[i-1])));
                     html.Append("'");
                     html.Append(">");
                     html.Append("<th scope ='row'>");
                     html.Append(courseCount.ToString());
                     html.Append("</th>");
-                    html.Append("<td>");
+                    html.Append("<td class='class-count'>");
                     //html.Append(Program.GetCompetitorClass(course.Items[i - 1]));
-                    html.Append(classCount.ToString());
+                    if (Shared.GetGenderFromClass(Program.GetCompetitorClass(course.Items[i - 1])) == "men")
+                    {
+                        mensCount++;
+                        html.Append(mensCount.ToString());
+                    }
+                    else
+                    {
+                        womensCount++;
+                        html.Append(womensCount.ToString());
+                    }
+
+                    //html.Append(classCount.ToString());
                     html.Append("</td>");
                     //html.Append("<td>");
                     //html.Append(Shared.GetEnumValue(course.Items[i-1].Status));
                     //html.Append("</td>");
-                    html.Append("<td>");
+                    html.Append("<td class='class-count'>");
                     html.Append("<img src='Images/");
                     html.Append(Shared.GetEnumValue(course.Items[i - 1].Status));
+                    html.Append(hyphen + imageSize);
                     html.Append(".png' class='img-responsive'>");
-                    //html.Append(Shared.GetEnumValue(course.Items[i-1].Status));
                     html.Append("</td>");
                     html.Append("<td>");
                     html.Append(course.Items[i - 1].SI);
@@ -135,6 +157,10 @@ namespace OR_Results
                     html.Append("</tr>");
                     prevCourse = course.course;
                     prevClass = Program.GetCompetitorClass(course.Items[i - 1]);
+                    //if (prevClass == Program.GetCompetitorClass(course.Items[i - 1]))
+                    //    mensCount++;
+                    //else
+                    //    womensCount++;
                 }
                 html.Append("</table>");
             }
@@ -142,22 +168,26 @@ namespace OR_Results
             html.Append("</div>");
             html.Append("<div class='col-lg'>");
             html.Append("<div class='row'>");
-            html.Append("<h3>Column 2</h3>");
-
 
             foreach (var course in data3)
 
             //foreach (var course in data)
             {
+                if (courseCount == 1)
+                {
+                    mensCount = 0;
+                    womensCount = 0;
+                }
                 var courseDetails = Shared.GetCourseDetails(course.course);
 
                 html.Append("<table class='table'>");
                 html.Append("<thead>");
                 html.Append("<tr>");
-                html.Append("<h3>");
-                html.Append(course.course);
-                html.Append("</h3>");
-                html.Append("</tr>");
+                if (courseCount ==1 ) {
+                    html.Append("<h3>");
+                    html.Append(course.course);
+                    html.Append("</h3>");
+                }
 
                 html.Append("<tr class='class-header'>");
                 html.Append("<th scope='col'>#</th>");
@@ -176,8 +206,8 @@ namespace OR_Results
                 html.Append("</thead>");
 
                 html.Append("<body>");
-                var prevCourse = string.Empty;
-                var prevClass = string.Empty;
+                //var prevCourse = string.Empty;
+                //var prevClass = string.Empty;
 
                 for (int i = 1; i <= course.Items.Count; i++)
                 {
@@ -193,7 +223,18 @@ namespace OR_Results
                     html.Append("</th>");
                     html.Append("<td>");
                     //html.Append(Program.GetCompetitorClass(course.Items[i - 1]));
-                    html.Append(classCount.ToString());
+                    if (Shared.GetGenderFromClass(Program.GetCompetitorClass(course.Items[i - 1])) == "men")
+                    {
+                        mensCount++;
+                        html.Append(mensCount.ToString());
+                    }
+                    else
+                    {
+                        womensCount++;
+                        html.Append(womensCount.ToString());
+                    }
+
+                    //html.Append(classCount.ToString());
                     html.Append("</td>");
                     //html.Append("<td>");
                     //html.Append(Shared.GetEnumValue(course.Items[i-1].Status));
@@ -201,6 +242,7 @@ namespace OR_Results
                     html.Append("<td>");
                     html.Append("<img src='Images/");
                     html.Append(Shared.GetEnumValue(course.Items[i - 1].Status));
+                    html.Append(hyphen + imageSize);
                     html.Append(".png' class='img-responsive'>");
                     //html.Append(Shared.GetEnumValue(course.Items[i-1].Status));
                     html.Append("</td>");
