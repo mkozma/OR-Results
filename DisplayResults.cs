@@ -57,7 +57,7 @@ namespace OR_Results
             var course = string.Empty;
 
             //Column 1
-            var currentCourse = BulldHTMLTable(Program.CompetitorCourseSummaries.ToList(),dataToSkip, dataToTake, course);
+            var currentCourse = BulldHTMLTable(Program.CompetitorCourseSummaries.ToList(),dataToSkip, dataToTake, null);
 
             //get the current course
 
@@ -88,7 +88,7 @@ namespace OR_Results
             System.Diagnostics.Process.Start(path);
         }
 
-        private string BulldHTMLTable(List<CompetitorResultSummary> dataList, int dataToSkip, int dataToTake, string currentCourse)
+        private HTMLHelper BulldHTMLTable(List<CompetitorResultSummary> dataList, int dataToSkip, int dataToTake, HTMLHelper htmlHelper)
         {
             var data1 = dataList.Skip(dataToSkip).Take(dataToTake).ToList();
             var data = data1.GroupBy(c => c.ClassId)
@@ -107,11 +107,11 @@ namespace OR_Results
                 html.Append("<tr>");
                 html.Append("<h3>");
                 //check if the course contines from previous column
-                if (currentCourse == string.Empty)
+                if (htmlHelper == null)
                     html.Append(course.course);
                 else
-                    if (currentCourse == course.course)
-                        html.Append(currentCourse + " (cont.)");
+                    if (htmlHelper.Course == course.course)
+                        html.Append(htmlHelper.Course + " (cont.)");
                 else
                     html.Append(course.course);
                 html.Append("</h3>");
@@ -138,14 +138,51 @@ namespace OR_Results
 
                 for (int i = 1; i <= course.Items.Count; i++)
                 {
-                    courseCount = (prevCourse == course.course) ? ++courseCount : 1;
-                    //classCount = (prevClass == Program.GetCompetitorClass( course.Items[i-1])) ? ++classCount : 1;
-                    if (courseCount == 1)
+                    if (
+                        ((htmlHelper == null) && (i == 1))
+                    //|| ((htmlHelper != null) && (i == 1))
+                    )
                     {
+                        courseCount = 0;
                         mensCount = 0;
-
                         womensCount = 0;
                     }
+                    else if ((htmlHelper != null) && (htmlHelper.IsNewTable == true))
+                    {
+                        courseCount = htmlHelper.CourseCount;
+                        mensCount = htmlHelper.ClassCountMen;
+                        womensCount = htmlHelper.ClassCountWomen;
+                        htmlHelper.IsNewTable = false;
+                    } else if ((htmlHelper != null) && (i==1))
+                    {
+                        courseCount = 0;
+                        mensCount = 0;
+                        womensCount = 0;
+                    }
+
+
+                    //if ((i == 1) && (htmlHelper != null))
+                    //{
+                    //    courseCount = htmlHelper.CourseCount;
+                    //    mensCount = htmlHelper.ClassCountMen;
+                    //    womensCount = htmlHelper.ClassCountWomen;
+                    //}
+                    //if (currentCourse == string.Empty)
+                    //    courseCount = (currentCourse == course.course) ? ++courseCount : 1;
+                    //else
+                    //{
+                    //prevCourse = currentCourse;
+                    courseCount++;
+                        //courseCount = (prevCourse == course.course) ? ++courseCount : 1;
+
+                    //}
+                    //classCount = (prevClass == Program.GetCompetitorClass( course.Items[i-1])) ? ++classCount : 1;
+                    //if (((htmlHelper == null) && (i == 1)) || ((htmlHelper != null ) && (prevCourse != course.course)))
+                    //{
+                    //    mensCount = 0;
+
+                    //    womensCount = 0;
+                    //}
 
                     html.Append("<tr");
                     html.Append(" class='");
@@ -207,7 +244,13 @@ namespace OR_Results
             html.Append("<div class='col-lg'>");
             html.Append("<div class='row'>");
 
-            return prevCourse;
+            return new HTMLHelper {
+                Course = prevCourse,
+                CourseCount = courseCount,
+                ClassCountMen = mensCount,
+                ClassCountWomen = womensCount,
+                IsNewTable = true
+            };
 
         }
 
