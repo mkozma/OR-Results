@@ -14,6 +14,15 @@ namespace OR_Results
             return enumDisplayStatus.ToString();
         }
 
-        
+        public static string GetGenderFromClass(string className)
+        {
+            var gender = string.Empty;
+            return gender = className.Contains("Women") ? "women" : "men";
+        }
+
+        public static Course GetCourseDetails(string courseId)
+        {
+            return Program.courses.FirstOrDefault(c => c.CourseId == courseId);
+        }
     }
 }

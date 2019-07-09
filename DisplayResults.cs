@@ -10,159 +10,72 @@ namespace OR_Results
 {
     public class DisplayResults
     {
+        public int mensCount { get; set; }
+        public int womensCount { get; set; }
+
+        string score = string.Empty;
+        int courseCount = 0;
+        int classCount = 0;
+        string time = string.Empty;
+        string imageSize = "15";
+        char hyphen = '-';
+
+        HtmlDocument doc = new HtmlDocument();
+        StringBuilder html = new StringBuilder();
+
+
         public DisplayResults()
         {
-            var doc = new HtmlDocument();
-            var html = new StringBuilder();
+            
 
             html.Append("<html>");
             html.Append("<head>");
-            html.Append("<Link rel='stylesheet' href='/css/bootstrap.min.css'>");
-            html.Append("<Link rel='stylesheet' href='/css/bootstrap-theme.min.css'>");
+            html.Append("<Link rel='stylesheet' href='css/bootstrap.min.css'>");
+            html.Append("<Link rel='stylesheet' href='css/main.css'>");
 
             html.Append("</head>");
             html.Append("<body>");
-            html.Append("<h1>OR Results</h1>");
-           
-            html.Append("</body>");
-           
 
-            var score = string.Empty;
-            var courseCount = 0;
-            var time = string.Empty;
+            html.Append("<div class='container-fluid'>");
 
-            var data = Program.CompetitorCourseSummaries.GroupBy(c => c.ClassId)
-                 .Select(group => new { course = group.Key, Items = group.ToList() })
-                 .ToList();
-            
-            
-            foreach (var course in data)
-            {
-                html.Append("<table class='table'>");
-                html.Append("<thead>");
-                html.Append("<tr>");
-                html.Append("<h3>");
-                html.Append(course.course);
-                html.Append("</h3>");
-                html.Append("</tr>");
+            html.Append("<div class='row'>");
+            html.Append("<h1>");
+            html.Append(Program.competition[0].Name);
+            html.Append("</h1>");
+            html.Append("</div>");
 
-                html.Append("<tr>");
-                html.Append("<th scope='col'>#</th>");
-                //html.Append("<th scope='col'>course #</th>");
-                html.Append("<th scope='col'>Class</th>");
-                html.Append("<th scope='col'>Status</th>");
-                html.Append("<th scope='col'>SI</th>");
-                html.Append("<th scope='col'>Name</th>");
-                html.Append("<th scope='col'>Time</th>");
-                if (course.course == "Score")
-                    html.Append("<th scope='col'>Score</th>");
-                else
-                    html.Append("<th scope='col'></th>");
-                html.Append("</tr>");
-
-                html.Append("</thead>");
-
-                html.Append("<body>");
-                var prevCourse = string.Empty;
-
-                //foreach (var item in course.Items)
-                for (int i = 1; i <= course.Items.Count; i++)
-                {
-                    courseCount = (prevCourse == course.course) ? ++courseCount : 1;
-                    html.Append("<tr>");
-                    //html.Append("<th scope='row'>");
-                    //html.Append(i.ToString());
-                    //html.Append("</th>");
-                    html.Append("<th scope ='row'>");
-                    html.Append(courseCount.ToString());
-                    html.Append("</th>");
-                    html.Append("<td>");
-                    html.Append(Program.GetCompetitorClass(course.Items[i - 1]));
-                    html.Append("</td>");
-                    html.Append("<td>");
-                    html.Append(Shared.GetEnumValue(course.Items[i-1].Status));
-                    html.Append("</td>");
-                    html.Append("<td>");
-                    html.Append(course.Items[i - 1].SI);
-                    html.Append("</td>");
-                    html.Append("<td>");
-                    html.Append(Program.GetName(course.Items[i - 1].SI));
-                    html.Append("</td>");
-                    html.Append("<td>");
-                    html.Append(course.Items[i - 1].ElapsedTime);
-                    html.Append("</td>");
-                    html.Append("<td>");
-                    html.Append(score = (course.Items[i - 1].Score == 0) ? string.Empty : course.Items[i - 1].Score.ToString());
-                    html.Append("</td>");
-                    html.Append("</tr>");
-                    prevCourse = course.course;
-
-                }
-                html.Append("</table>");
-            }
+            html.Append("<div class='row'>");
 
 
+            //calculate rows per column
+            var dataCount = Program.CompetitorCourseSummaries.Count;
+            var coursesCount = Program.courses.Count;
+            double dataCountDbl = (((coursesCount * 2) + dataCount) / 3);
+            int dataToSkip = 0;
+            int dataToTake = (int)Math.Ceiling(dataCountDbl);
 
-            //html.Append("<tr>");
-            //html.Append("<th scope='col'>#</th>");
-            //html.Append("<th scope='col'>course #</th>");
-            //html.Append("<th scope='col'>class #</th>");
-            //html.Append("<th scope='col'>status</th>");
-            //html.Append("<th scope='col'>SI</th>");
-            //html.Append("<th scope='col'>Name</th>");
-            //html.Append("<th scope='col'>Time</th>");
-            //html.Append("<th scope='col'>Score</th>");
+            var course = string.Empty;
 
-            //html.Append("</tr>");
-            //html.Append("</thead>");
-            //html.Append("<body>");
+            //Column 1
+            var currentCourse = BulldHTMLTable(Program.CompetitorCourseSummaries.ToList(),dataToSkip, dataToTake, null);
+            dataToSkip = dataToSkip  + dataToTake;
 
-            //foreach (var competitorSummary in Program.competitorCourseSummaries)
-            //{
+            //get the current course
 
+            //Column 2
+            currentCourse = BulldHTMLTable(Program.CompetitorCourseSummaries, dataToSkip, dataToTake, currentCourse);
+            dataToSkip = dataToSkip  + dataToTake;
 
-            //var prevCourse = string.Empty;
-            //for (int i = 1; i <= data.Count; i++)
-            //{
-            //    courseCount = (prevCourse == data[i - 1].CourseId) ? ++courseCount : 1;
-            //    html.Append("<tr>");
-            //    html.Append("<th scope='row'>");
-            //    html.Append(i.ToString());
-            //    html.Append("</th>");
-            //    html.Append("<td>");
-            //    html.Append(courseCount.ToString());
-            //    html.Append("</td>");
-            //    html.Append("<td>");
-            //    html.Append(data[i-1].CourseId);
-            //    html.Append("</td>");
-            //    html.Append("<td>");
-            //    html.Append(Shared.GetEnumValue(data[i - 1].Status));
-            //    html.Append("</td>");
-            //    html.Append("<td>");
-            //    html.Append(data[i - 1].SI);
-            //    html.Append("</td>");
-            //    html.Append("<td>");
-            //    html.Append(Program.GetName(data[i - 1].SI));
-            //    html.Append("</td>");
-            //    html.Append("<td>");
-            //    html.Append(data[i - 1].ElapsedTime);
-            //    html.Append("</td>");
-            //    html.Append("<td>");
-            //    html.Append(score = (data[i - 1].Score == 0) ? string.Empty : data[i - 1].Score.ToString());
-            //    html.Append("</td>");
-            //    html.Append("</tr>");
-            //    prevCourse = data[i - 1].CourseId;
-            //}
+            //column 3
+            currentCourse = BulldHTMLTable(Program.CompetitorCourseSummaries, dataToSkip, dataCount - dataToSkip, currentCourse);
 
+            //html.Append("</div>"); //div = col-lg
+            html.Append("</div>"); //div = container
 
-           
-
-            html.Append("<script src='/js/jquery.min.js'></script>");
-            html.Append("<script src='/js/bootstrap.min.js'></script>");
-
+            html.Append("<script src='js/jquery.min.js'></script>");
+            html.Append("<script src='js/bootstrap.min.js'></script>");
 
             html.Append("</body>");
-
 
             html.Append("</html>");
 
@@ -177,5 +90,141 @@ namespace OR_Results
             doc.Save(path);
             System.Diagnostics.Process.Start(path);
         }
+
+        private HTMLHelper BulldHTMLTable(List<CompetitorResultSummary> dataList, int dataToSkip, int dataToTake, HTMLHelper htmlHelper)
+        {
+            var data1 = dataList.Skip(dataToSkip).Take(dataToTake).ToList();
+            var data = data1.GroupBy(c => c.ClassId)
+                .Select(group => new { course = group.Key, Items = group.ToList() })
+                .ToList();
+
+            var prevCourse = string.Empty;
+            var prevClass = string.Empty;
+            html.Append("<div class='col-lg'>");
+
+            foreach (var course in data)
+            {
+                var courseDetails = Shared.GetCourseDetails(course.course);
+                html.Append("<table class='table'>");
+                html.Append("<thead>");
+                html.Append("<tr>");
+                html.Append("<h3>");
+                //check if the course contines from previous column
+                if (htmlHelper == null)
+                    html.Append(course.course);
+                else
+                    if (htmlHelper.Course == course.course)
+                        html.Append(htmlHelper.Course + " (cont.)");
+                else
+                    html.Append(course.course);
+                html.Append("</h3>");
+                html.Append("</tr>");
+
+                html.Append("<tr class='class-header'>");
+                html.Append("<th scope='col'>#</th>");
+                html.Append("<th scope='col'>Class #</th>");
+                //html.Append("<th scope='col'>Status</th>");
+                html.Append("<th scope='col'>Status</th>");
+                //html.Append("<th scope='col'>SI</th>");
+                html.Append("<th scope='col'>Name</th>");
+                html.Append("<th scope='col'>Time</th>");
+                if (course.course == "Score")
+                    html.Append("<th scope='col'>Score</th>");
+                else
+                    html.Append("<th scope='col'></th>");
+                html.Append("</tr>");
+
+                html.Append("</thead>");
+
+                html.Append("<body>");
+
+
+                for (int i = 1; i <= course.Items.Count; i++)
+                {
+                    if (
+                        ((htmlHelper == null) && (i == 1))
+                    )
+                    {
+                        courseCount = 0;
+                        mensCount = 0;
+                        womensCount = 0;
+                    }
+                    else if ((htmlHelper != null) && (htmlHelper.IsNewTable == true))
+                    {
+                        courseCount = htmlHelper.CourseCount;
+                        mensCount = htmlHelper.ClassCountMen;
+                        womensCount = htmlHelper.ClassCountWomen;
+                        htmlHelper.IsNewTable = false;
+                    } else if ((htmlHelper != null) && (i==1))
+                    {
+                        courseCount = 0;
+                        mensCount = 0;
+                        womensCount = 0;
+                    }
+
+                    courseCount++;
+                    html.Append("<tr");
+                    html.Append(" class='");
+
+                    html.Append(Shared.GetGenderFromClass(Program.GetCompetitorClass(course.Items[i - 1])));
+                    html.Append("'");
+                    html.Append(">");
+                    html.Append("<th scope ='row'>");
+                    html.Append(courseCount.ToString());
+                    html.Append("</th>");
+                    html.Append("<td class='class-count'>");
+                    if (Shared.GetGenderFromClass(Program.GetCompetitorClass(course.Items[i - 1])) == "men")
+                    {
+                        mensCount++;
+                        html.Append(mensCount.ToString());
+                    }
+                    else
+                    {
+                        womensCount++;
+                        html.Append(womensCount.ToString());
+                    }
+
+                    //html.Append(classCount.ToString());
+                    html.Append("</td>");
+                    //html.Append("<td>");
+                    //html.Append(Shared.GetEnumValue(course.Items[i-1].Status));
+                    //html.Append("</td>");
+                    html.Append("<td class='class-count'>");
+                    html.Append("<img src='Images/");
+                    html.Append(Shared.GetEnumValue(course.Items[i - 1].Status));
+                    html.Append(hyphen + imageSize);
+                    html.Append(".png' class='img-responsive'>");
+                    html.Append("</td>");
+                    //html.Append("<td>");
+                    //html.Append(course.Items[i - 1].SI);
+                    //html.Append("</td>");
+                    html.Append("<td>");
+                    html.Append(Program.GetName(course.Items[i - 1].SI));
+                    html.Append("</td>");
+                    html.Append("<td>");
+                    html.Append(course.Items[i - 1].ElapsedTime);
+                    html.Append("</td>");
+                    html.Append("<td>");
+                    html.Append(score = (course.Items[i - 1].Score == 0) ? string.Empty : course.Items[i - 1].Score.ToString());
+                    html.Append("</td>");
+                    html.Append("</tr>");
+                    prevCourse = course.course;
+                    prevClass = Program.GetCompetitorClass(course.Items[i - 1]);
+                }
+                html.Append("</table>");
+            }
+           
+            html.Append("</div>");
+
+            return new HTMLHelper {
+                Course = prevCourse,
+                CourseCount = courseCount,
+                ClassCountMen = mensCount,
+                ClassCountWomen = womensCount,
+                IsNewTable = true
+            };
+
+        }
+
     }
 }
