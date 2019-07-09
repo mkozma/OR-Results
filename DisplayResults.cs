@@ -17,7 +17,7 @@ namespace OR_Results
         int courseCount = 0;
         int classCount = 0;
         string time = string.Empty;
-        string imageSize = "25";
+        string imageSize = "15";
         char hyphen = '-';
 
         HtmlDocument doc = new HtmlDocument();
@@ -45,12 +45,12 @@ namespace OR_Results
             html.Append("</div>");
 
             html.Append("<div class='row'>");
-            html.Append("<div class='col-lg'>");
+
 
             //calculate rows per column
             var dataCount = Program.CompetitorCourseSummaries.Count;
             var coursesCount = Program.courses.Count;
-            double dataCountDbl = (((coursesCount * 2) + dataCount) / 2);
+            double dataCountDbl = (((coursesCount * 2) + dataCount) / 3);
             int dataToSkip = 0;
             int dataToTake = (int)Math.Ceiling(dataCountDbl);
 
@@ -58,16 +58,19 @@ namespace OR_Results
 
             //Column 1
             var currentCourse = BulldHTMLTable(Program.CompetitorCourseSummaries.ToList(),dataToSkip, dataToTake, null);
+            dataToSkip = dataToSkip  + dataToTake;
 
             //get the current course
 
             //Column 2
-            currentCourse = BulldHTMLTable(Program.CompetitorCourseSummaries, dataToTake, dataCount-dataToTake, currentCourse);
+            currentCourse = BulldHTMLTable(Program.CompetitorCourseSummaries, dataToSkip, dataToTake, currentCourse);
+            dataToSkip = dataToSkip  + dataToTake;
 
-            html.Append("</div>");
-            html.Append("</div>");
-            html.Append("</div>");
-            html.Append("</div>");
+            //column 3
+            currentCourse = BulldHTMLTable(Program.CompetitorCourseSummaries, dataToSkip, dataCount - dataToSkip, currentCourse);
+
+            //html.Append("</div>"); //div = col-lg
+            html.Append("</div>"); //div = container
 
             html.Append("<script src='js/jquery.min.js'></script>");
             html.Append("<script src='js/bootstrap.min.js'></script>");
@@ -97,11 +100,11 @@ namespace OR_Results
 
             var prevCourse = string.Empty;
             var prevClass = string.Empty;
+            html.Append("<div class='col-lg'>");
 
             foreach (var course in data)
             {
                 var courseDetails = Shared.GetCourseDetails(course.course);
-
                 html.Append("<table class='table'>");
                 html.Append("<thead>");
                 html.Append("<tr>");
@@ -122,7 +125,7 @@ namespace OR_Results
                 html.Append("<th scope='col'>Class #</th>");
                 //html.Append("<th scope='col'>Status</th>");
                 html.Append("<th scope='col'>Status</th>");
-                html.Append("<th scope='col'>SI</th>");
+                //html.Append("<th scope='col'>SI</th>");
                 html.Append("<th scope='col'>Name</th>");
                 html.Append("<th scope='col'>Time</th>");
                 if (course.course == "Score")
@@ -140,7 +143,6 @@ namespace OR_Results
                 {
                     if (
                         ((htmlHelper == null) && (i == 1))
-                    //|| ((htmlHelper != null) && (i == 1))
                     )
                     {
                         courseCount = 0;
@@ -160,30 +162,7 @@ namespace OR_Results
                         womensCount = 0;
                     }
 
-
-                    //if ((i == 1) && (htmlHelper != null))
-                    //{
-                    //    courseCount = htmlHelper.CourseCount;
-                    //    mensCount = htmlHelper.ClassCountMen;
-                    //    womensCount = htmlHelper.ClassCountWomen;
-                    //}
-                    //if (currentCourse == string.Empty)
-                    //    courseCount = (currentCourse == course.course) ? ++courseCount : 1;
-                    //else
-                    //{
-                    //prevCourse = currentCourse;
                     courseCount++;
-                        //courseCount = (prevCourse == course.course) ? ++courseCount : 1;
-
-                    //}
-                    //classCount = (prevClass == Program.GetCompetitorClass( course.Items[i-1])) ? ++classCount : 1;
-                    //if (((htmlHelper == null) && (i == 1)) || ((htmlHelper != null ) && (prevCourse != course.course)))
-                    //{
-                    //    mensCount = 0;
-
-                    //    womensCount = 0;
-                    //}
-
                     html.Append("<tr");
                     html.Append(" class='");
 
@@ -194,7 +173,6 @@ namespace OR_Results
                     html.Append(courseCount.ToString());
                     html.Append("</th>");
                     html.Append("<td class='class-count'>");
-                    //html.Append(Program.GetCompetitorClass(course.Items[i - 1]));
                     if (Shared.GetGenderFromClass(Program.GetCompetitorClass(course.Items[i - 1])) == "men")
                     {
                         mensCount++;
@@ -217,9 +195,9 @@ namespace OR_Results
                     html.Append(hyphen + imageSize);
                     html.Append(".png' class='img-responsive'>");
                     html.Append("</td>");
-                    html.Append("<td>");
-                    html.Append(course.Items[i - 1].SI);
-                    html.Append("</td>");
+                    //html.Append("<td>");
+                    //html.Append(course.Items[i - 1].SI);
+                    //html.Append("</td>");
                     html.Append("<td>");
                     html.Append(Program.GetName(course.Items[i - 1].SI));
                     html.Append("</td>");
@@ -232,17 +210,11 @@ namespace OR_Results
                     html.Append("</tr>");
                     prevCourse = course.course;
                     prevClass = Program.GetCompetitorClass(course.Items[i - 1]);
-                    //if (prevClass == Program.GetCompetitorClass(course.Items[i - 1]))
-                    //    mensCount++;
-                    //else
-                    //    womensCount++;
                 }
                 html.Append("</table>");
             }
-
+           
             html.Append("</div>");
-            html.Append("<div class='col-lg'>");
-            html.Append("<div class='row'>");
 
             return new HTMLHelper {
                 Course = prevCourse,

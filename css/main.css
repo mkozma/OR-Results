@@ -1,13 +1,44 @@
 h1 {
-    font-size: 32px;
-    color: purple;
+    font-size: 48px;
+    color: green;
 }
 
 h3 {
-    font-size: 20px;
+    font-size: 32px;
+    color: green;
+}
+
+
+tr {
+    font-size: 18px;
+    height: 25px;
+    line-height:25px;
+    padding: 0;
+}
+
+tr.class-header {
+    background-color: green;
+    color: white;
 }
 
 tr.women {
-    background-color: red;
+    background-color: pink;
 }
+
+tr.men {
+    background-color: lightblue;
+    padding: 0px,0px,0px,0px;
+}
+
+td {
+    padding: 0;
+}
+
+td.class-count td.course-count {
+    width: 20px;
+}
+
+
+
+
 
