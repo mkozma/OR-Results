@@ -2,6 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Reflection;
+using System.Security.Permissions;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Xml;
 
 namespace OR_Results
 {
@@ -33,10 +40,57 @@ namespace OR_Results
             PerformResults();
         }
 
+
+        [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
+        private static void Run()
+        {
+            string[] args = Environment.GetCommandLineArgs();
+
+            // If a directory is not specified, exit program.
+            if (args.Length != 2)
+            {
+                // Display the proper way to call the program.
+                Console.WriteLine("Usage: Watcher.exe (directory)");
+                return;
+            }
+
+            // Create a new FileSystemWatcher and set its properties.
+            using (FileSystemWatcher watcher = new FileSystemWatcher(DATA_PATH))
+            {
+                watcher.Path = args[1];
+
+                // Watch for changes in LastAccess and LastWrite times, and
+                // the renaming of files or directories.
+                watcher.NotifyFilter = NotifyFilters.LastAccess
+                                     | NotifyFilters.LastWrite
+                                     | NotifyFilters.FileName
+                                     | NotifyFilters.DirectoryName;
+
+                // Only watch text files.
+                watcher.Filter = "*.txt";
+
+                // Add event handlers.
+                watcher.Changed += OnChanged;
+                //watcher.Created += OnChanged;
+                //watcher.Deleted += OnChanged;
+                //watcher.Renamed += OnRenamed;
+
+                // Begin watching.
+                watcher.EnableRaisingEvents = true;
+
+                // Wait for the user to quit the program.
+                Console.WriteLine("Press 'q' to quit the sample.");
+                while (Console.Read() != 'q') ;
+            }
+        }
+
+        private static void OnChanged(object source, FileSystemEventArgs e) =>
+            // Specify what is done when a file is changed, created, or deleted.
+            Console.WriteLine($"File: {e.FullPath} {e.ChangeType}");
+
         private static void Initialise()
         {
             Settings = new Settings();
-
 
             competition = new CSVHelper<Competition>().ReadData(Settings.FullPath + "competition.csv", new Competition(), ";").ToList();
             controls = new CSVHelper<Control>().ReadData(Settings.FullPath + "controls.csv", new Control()).ToList();
@@ -91,6 +145,7 @@ namespace OR_Results
             SortResults();
             DisplayResults();
         }
+
         private static void CheckForStart()
         {
             foreach (var competitorPunches in coursePunches)
@@ -131,7 +186,6 @@ namespace OR_Results
             
             CompetitorCourseSummaries = CompetitorCourseSummaries
                 .OrderBy(c=>c.CourseId)
-                //.ThenBy(c=>c.ClassId)
                 .ThenBy(c=>c.Status)
                 .ThenByDescending(c => c.Score)
                 .ThenBy(c => c.ElapsedTime)
