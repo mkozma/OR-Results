@@ -19,6 +19,14 @@ namespace OR_Results
             get { return dataPath + backSlash + competition + backSlash; }
         }
 
+        public string DataPath
+        {
+            get
+            {
+                return dataPath;
+            }
+        }
+
 
         public Settings()
         {

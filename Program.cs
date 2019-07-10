@@ -36,7 +36,7 @@ namespace OR_Results
 
 
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
-        private static void Run()
+        private static void SetFileWatcher()
         {
             string[] args = Environment.GetCommandLineArgs();
 
@@ -49,7 +49,7 @@ namespace OR_Results
             }
 
             // Create a new FileSystemWatcher and set its properties.
-            using (FileSystemWatcher watcher = new FileSystemWatcher(DATA_PATH))
+            using (FileSystemWatcher watcher = new FileSystemWatcher(Settings.DataPath))
             {
                 watcher.Path = args[1];
 
@@ -85,17 +85,21 @@ namespace OR_Results
         private static void Initialise()
         {
             Settings = new Settings();
+            ReadSetupFiles();
 
+            CompetitorCourseSummaries = new List<CompetitorResultSummary>();
+
+            SetFileWatcher();
+        }
+
+        private static void ReadSetupFiles()
+        {
             competition = new CSVHelper<Competition>().ReadData(Settings.FullPath + "competition.csv", new Competition(), ";").ToList();
             controls = new CSVHelper<Control>().ReadData(Settings.FullPath + "controls.csv", new Control()).ToList();
             courses = new CSVHelper<Course>().ReadData(Settings.FullPath + "courses.csv", new Course()).ToList();
 
             courseVariants = new CSVHelper<CourseVariant>().ReadData(Settings.FullPath + "courseVariants.csv", new CourseVariant()).ToList();
-
-
-            CompetitorCourseSummaries = new List<CompetitorResultSummary>();
         }
-
 
         private static void EventDayMontitoring()
         {
