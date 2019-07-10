@@ -22,12 +22,39 @@ namespace OR_Results
 
         public static List<CompetitorResultSummary> CompetitorCourseSummaries { get; set; }
 
+        public static Settings Settings { get; set; }
+
         static void Main(string[] args)
         {
             Initialise();
+            EventDayMontitoring();
             ParseResults(records);
             ManipulateData();
             PerformResults();
+        }
+
+        private static void Initialise()
+        {
+            Settings = new Settings();
+
+
+            competition = new CSVHelper<Competition>().ReadData(Settings.FullPath + "competition.csv", new Competition(), ";").ToList();
+            controls = new CSVHelper<Control>().ReadData(Settings.FullPath + "controls.csv", new Control()).ToList();
+            courses = new CSVHelper<Course>().ReadData(Settings.FullPath + "courses.csv", new Course()).ToList();
+
+            courseVariants = new CSVHelper<CourseVariant>().ReadData(Settings.FullPath + "courseVariants.csv", new CourseVariant()).ToList();
+
+
+            CompetitorCourseSummaries = new List<CompetitorResultSummary>();
+        }
+
+
+        private static void EventDayMontitoring()
+        {
+            competitors = new CSVHelper<Competitor>().ReadData(Settings.FullPath + "competitors.csv", new Competitor(), ";").ToList();
+
+            records = new CSVHelper<CompetitorResult>().ReadData(Settings.FullPath + "results.csv", new CompetitorResult(), ";").ToList();
+
         }
 
         private static void ManipulateData()
@@ -51,18 +78,11 @@ namespace OR_Results
             }
         }
 
-        private static void Initialise()
+      
+        private static void ReadSettings()
         {
-            competition = new CSVHelper<Competition>().ReadData(DATA_PATH + "competition.csv", new Competition(),";").ToList();
-            controls = new CSVHelper<Control>().ReadData(DATA_PATH + "controls.csv", new Control()).ToList();
-            competitors = new CSVHelper<Competitor>().ReadData(DATA_PATH + "competitors.csv", new Competitor(), ";").ToList();
-            courses = new CSVHelper<Course>().ReadData(DATA_PATH + "courses.csv", new Course()).ToList();
-
-            courseVariants = new CSVHelper<CourseVariant>().ReadData(DATA_PATH + "courseVariants.csv", new CourseVariant()).ToList();
-
-            CompetitorCourseSummaries = new List<CompetitorResultSummary>();
-
-            records = new CSVHelper<CompetitorResult>().ReadData(DATA_PATH + "results.csv", new CompetitorResult(), ";").ToList();
+            
+            
         }
 
         private static void PerformResults()
@@ -428,25 +448,5 @@ namespace OR_Results
         }
     }
 
-    class CoursePunch
-    {
-        public int SI { get; set; }
-        public List<CompetitorControl> CompetitorControls { get; set; }
-    }
 
-    class CompetitorControl
-    {
-        public string CoursePunchName { get; set; }
-        public TimeSpan CoursePunchTime { get; set; }
-    }
-
-    enum Status
-    {
-        Finished,
-        Started,
-        Mispunch,
-        DidNotFinish,
-        DidNotStart
-    }
-   
 }
