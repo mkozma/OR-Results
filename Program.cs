@@ -1,10 +1,6 @@
-﻿using CsvHelper;
-using HtmlAgilityPack;
-//using HtmlAgilityPack;
+﻿//using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -18,29 +14,32 @@ namespace OR_Results
 {
     class Program
     {
-        private static List<CompetitorResult> records;
-        private static List<CoursePunch> coursePunches;
-        private static List<Control> controls;
-        private static List<Competitor> competitors;
-        private static List<Course> courses;
-        private static List<CourseVariant> courseVariants;
-        private static List<Competition> competition;
+        public static List<CompetitorResult> records;
+        public static List<CoursePunch> coursePunches;
+        public static List<Control> controls;
+        public static List<Competitor> competitors;
+        public static List<Course> courses;
+        public static List<CourseVariant> courseVariants;
+        public static List<Competition> competition;
 
-        private static List<CompetitorResultSummary> competitorCourseSummaries;
+        public static List<CompetitorResultSummary> competitorCourseSummaries;
         private static string Course;
 
         private const string DATA_PATH = @"C:\Users\mkozm\Or\21\";
 
         public static List<CompetitorResultSummary> CompetitorCourseSummaries { get; set; }
 
+        public static Settings Settings { get; set; }
+
         static void Main(string[] args)
         {
             Initialise();
-            Run();
+            EventDayMontitoring();
             ParseResults(records);
             ManipulateData();
             PerformResults();
         }
+
 
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
         private static void Run()
@@ -89,6 +88,28 @@ namespace OR_Results
             // Specify what is done when a file is changed, created, or deleted.
             Console.WriteLine($"File: {e.FullPath} {e.ChangeType}");
 
+        private static void Initialise()
+        {
+            Settings = new Settings();
+
+            competition = new CSVHelper<Competition>().ReadData(Settings.FullPath + "competition.csv", new Competition(), ";").ToList();
+            controls = new CSVHelper<Control>().ReadData(Settings.FullPath + "controls.csv", new Control()).ToList();
+            courses = new CSVHelper<Course>().ReadData(Settings.FullPath + "courses.csv", new Course()).ToList();
+
+            courseVariants = new CSVHelper<CourseVariant>().ReadData(Settings.FullPath + "courseVariants.csv", new CourseVariant()).ToList();
+
+
+            CompetitorCourseSummaries = new List<CompetitorResultSummary>();
+        }
+
+
+        private static void EventDayMontitoring()
+        {
+            competitors = new CSVHelper<Competitor>().ReadData(Settings.FullPath + "competitors.csv", new Competitor(), ";").ToList();
+
+            records = new CSVHelper<CompetitorResult>().ReadData(Settings.FullPath + "results.csv", new CompetitorResult(), ";").ToList();
+
+        }
 
         private static void ManipulateData()
         {
@@ -111,18 +132,11 @@ namespace OR_Results
             }
         }
 
-        private static void Initialise()
+      
+        private static void ReadSettings()
         {
-            competition = new CSVHelper<Competition>().ReadData(DATA_PATH + "competition.csv", new Competition(),";").ToList();
-            controls = new CSVHelper<Control>().ReadData(DATA_PATH + "controls.csv", new Control()).ToList();
-            competitors = new CSVHelper<Competitor>().ReadData(DATA_PATH + "competitors.csv", new Competitor(), ";").ToList();
-            courses = new CSVHelper<Course>().ReadData(DATA_PATH + "courses.csv", new Course()).ToList();
-
-            courseVariants = new CSVHelper<CourseVariant>().ReadData(DATA_PATH + "courseVariants.csv", new CourseVariant()).ToList();
-
-            CompetitorCourseSummaries = new List<CompetitorResultSummary>();
-
-            records = new CSVHelper<CompetitorResult>().ReadData(DATA_PATH + "results.csv", new CompetitorResult(), ";").ToList();
+            
+            
         }
 
         private static void PerformResults()
@@ -132,12 +146,38 @@ namespace OR_Results
             DisplayResults();
         }
 
-        private static void CheckElapsedTime()
+        private static void CheckForStart()
         {
-            foreach (var competitorCourseSummary in CompetitorCourseSummaries)
+            foreach (var competitorPunches in coursePunches)
             {
-               if (competitorCourseSummary.Status == (int)Status.Finished)
-                    CalculateElapsedTime(competitorCourseSummary);
+                var competitorCourseSummary = new CompetitorResultSummary();
+                competitorCourseSummary.SI = competitorPunches.SI;
+
+                competitorCourseSummary.CourseId =
+                    (GetCompetitorCourse(competitorCourseSummary) == null)
+                    ? string.Empty
+                    : GetCompetitorCourse(competitorCourseSummary);
+
+                competitorCourseSummary.StartTime = competitorPunches.CompetitorControls[0].CoursePunchTime;
+                if (competitorCourseSummary.StartTime == TimeSpan.Zero)
+                {
+                    competitorCourseSummary.Status = (int)Status.DidNotStart;
+                }
+                else
+                {
+                    if (competitorPunches.CompetitorControls.Any(s => s.CoursePunchName == "F"))
+                    {
+                        competitorCourseSummary.FinishTime = competitorPunches.CompetitorControls.SingleOrDefault(s => s.CoursePunchName == "F").CoursePunchTime;
+                        competitorCourseSummary.Status = (int)Status.Finished;
+
+                        CalculateScore(competitorPunches.CompetitorControls, competitorCourseSummary);
+                    }
+                    else
+                    {
+                        GetStatus(competitorCourseSummary);
+                    }
+                }
+                CompetitorCourseSummaries.Add(competitorCourseSummary);
             }
         }
 
@@ -166,6 +206,8 @@ namespace OR_Results
             var prevCourse = string.Empty;
             var prevClass = string.Empty;
 
+            var scorePts = string.Empty;
+
             for (int i = 1; i<= CompetitorCourseSummaries.Count; i++)
             {
                 courseCount = (prevCourse == CompetitorCourseSummaries[i - 1].CourseId) ? ++courseCount :  1;
@@ -180,8 +222,8 @@ namespace OR_Results
                     CompetitorCourseSummaries[i - 1].SI,
                     GetName(CompetitorCourseSummaries[i - 1].SI),
                     score = (CompetitorCourseSummaries[i - 1].Score == 0) ? string.Empty : CompetitorCourseSummaries[i - 1].Score.ToString(),
-                    elapsedTime = (CompetitorCourseSummaries[i - 1].Status == (int)Status.Finished) ? 
-                    CompetitorCourseSummaries[i-1].ElapsedTime.ToString() : string.Empty); 
+                    elapsedTime = (CompetitorCourseSummaries[i - 1].Status == (int)Status.Finished) ?
+                    CompetitorCourseSummaries[i - 1].ElapsedTime.ToString() : string.Empty);
                 Console.WriteLine();
                 prevCourse = CompetitorCourseSummaries[i - 1].CourseId;
                 prevClass = GetCompetitorClass(CompetitorCourseSummaries[i - 1]);
@@ -196,7 +238,7 @@ namespace OR_Results
             return enumDisplayStatus.ToString();
         }
 
-        private static object GetName(int sI)
+        public static object GetName(int sI)
         {
             return competitors.FirstOrDefault(c => c.SI == sI).Name;
         }
@@ -337,7 +379,7 @@ namespace OR_Results
             return competitors.FirstOrDefault(c => c.SI == competitorCourseSummary.SI).CourseId;
         }
 
-        private static string GetCompetitorClass(CompetitorResultSummary competitorResultSummary)
+        public static string GetCompetitorClass(CompetitorResultSummary competitorResultSummary)
         {
             return competitors.FirstOrDefault(c => c.SI == competitorResultSummary.SI).ClassId;
         }
@@ -360,29 +402,7 @@ namespace OR_Results
 
         private static void DisplayResults()
         {
-            var doc = new HtmlDocument();
-            var html = new StringBuilder();
-          
-            html.Append("<html>");
-            html.Append("<head>");
-            html.Append("</head>");
-            html.Append("<body>");
-            html.Append("<h1>OR Results</h1>");
-            html.Append("<script src='js/jquery.min.js'></script>");
-            html.Append("<script src='js/bootstrap.min.js'></script>");
-            html.Append("</body>");
-            html.Append("</html>");
-
-            doc.LoadHtml(html.ToString());
-
-            FileStream sw = new FileStream("FileStream.html", FileMode.Create);
-
-            var currentDir = @"C:\inetpub\wwwroot" + @"\";
-
-            var path = currentDir + "FileStream.html";
-
-            doc.Save(path);
-            System.Diagnostics.Process.Start(path);
+            var displayResults = new DisplayResults();
         }
 
         private static void ParseResults(List<CompetitorResult> records)
@@ -482,25 +502,5 @@ namespace OR_Results
         }
     }
 
-    class CoursePunch
-    {
-        public int SI { get; set; }
-        public List<CompetitorControl> CompetitorControls { get; set; }
-    }
 
-    class CompetitorControl
-    {
-        public string CoursePunchName { get; set; }
-        public TimeSpan CoursePunchTime { get; set; }
-    }
-
-    enum Status
-    {
-        Finished,
-        Started,
-        Mispunch,
-        DidNotFinish,
-        DidNotStart
-    }
-   
 }
