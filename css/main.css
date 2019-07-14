@@ -1,33 +1,57 @@
-h1 {
-    font-size: 48px;
-    color: green;
+body {
+	background-color: black;
 }
 
-h3 {
+h1 {
     font-size: 32px;
     color: green;
 }
 
+h2 {
+    font-size: 28px;
+    color: green;
+    font-weight: bold;
+}
+
+h3 {
+    font-size: 24px;
+    color: green;
+}
+
+th {
+    padding: 0;
+    height: 15px;
+}
+
+th.course-header {
+	font-size: 36px;
+}
+
 
 tr {
-    font-size: 18px;
-    height: 25px;
-    line-height:25px;
+    font-size: 15px;
+	font-weight: bold;
+    height: 15px;
+    line-height:15px;
     padding: 0;
 }
 
 tr.class-header {
     background-color: green;
-    color: white;
+    color: yellow;
 }
 
 tr.women {
     background-color: pink;
+    height: 15px;
+    line-height: 15px;
 }
 
 tr.men {
     background-color: lightblue;
-    padding: 0px,0px,0px,0px;
+    padding: 0px;
+    height: 15px;
+    line-height: 15px;
 }
 
 td {
@@ -37,6 +61,10 @@ td {
 td.class-count td.course-count {
     width: 20px;
 }
+
+/*td.elapsed-time {
+   visibility: hidden;
+}*/
 
 
 
