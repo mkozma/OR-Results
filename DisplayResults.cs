@@ -30,6 +30,7 @@ namespace OR_Results
 
             html.Append("<html>");
             html.Append("<head>");
+            html.Append("<meta http-equiv='refresh' content='5' />");
             html.Append("<Link rel='stylesheet' href='css/bootstrap.min.css'>");
             html.Append("<Link rel='stylesheet' href='css/main.css'>");
 
@@ -50,9 +51,12 @@ namespace OR_Results
             //calculate rows per column
             var dataCount = Program.CompetitorCourseSummaries.Count;
             var coursesCount = Program.courses.Count;
-            double dataCountDbl = (((coursesCount * 2) + dataCount) / 3);
+            ////double dataCountDbl = (((coursesCount) + dataCount) / 3);
+            //double dataCountDbl = ((dataCount) / 3);
+            //int dataToSkip = 0;
+            //int dataToTake = (int)Math.Ceiling(dataCountDbl);
             int dataToSkip = 0;
-            int dataToTake = (int)Math.Ceiling(dataCountDbl);
+            int dataToTake = 21;
 
             var course = string.Empty;
 
@@ -83,9 +87,9 @@ namespace OR_Results
 
             FileStream sw = new FileStream("FileStream.html", FileMode.Create);
 
-            var currentDir = @"C:\inetpub\wwwroot" + @"\";
+            var currentDir = @"Z:" + @"\";
 
-            var path = currentDir + "FileStream.html";
+            var path = currentDir + "index.html";
 
             doc.Save(path);
             System.Diagnostics.Process.Start(path);
@@ -107,21 +111,29 @@ namespace OR_Results
                 var courseDetails = Shared.GetCourseDetails(course.course);
                 html.Append("<table class='table'>");
                 html.Append("<thead>");
-                html.Append("<tr>");
-                html.Append("<h3>");
-                //check if the course contines from previous column
+                //html.Append("<tr>");
+                //html.Append("<h3>");
+                ////check if the course contines from previous column
+                //if (htmlHelper == null)
+                //    html.Append(course.course);
+                //else
+                //    if (htmlHelper.Course == course.course)
+                //        html.Append(htmlHelper.Course + " (cont.)");
+                //else
+                //    html.Append(course.course);
+                //html.Append("</h3>");
+                //html.Append("</tr>");
+
+                html.Append("<tr class='class-header'>");
+                html.Append("<th class='course-header' scope='col'>");
                 if (htmlHelper == null)
                     html.Append(course.course);
                 else
                     if (htmlHelper.Course == course.course)
-                        html.Append(htmlHelper.Course + " (cont.)");
+                        html.Append(htmlHelper.Course + "...");
                 else
                     html.Append(course.course);
-                html.Append("</h3>");
-                html.Append("</tr>");
-
-                html.Append("<tr class='class-header'>");
-                html.Append("<th scope='col'>#</th>");
+                html.Append("</th>");
                 html.Append("<th scope='col'>Class #</th>");
                 //html.Append("<th scope='col'>Status</th>");
                 html.Append("<th scope='col'>Status</th>");
