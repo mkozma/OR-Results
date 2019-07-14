@@ -7,6 +7,12 @@ h1 {
     color: green;
 }
 
+h2 {
+    font-size: 28px;
+    color: green;
+    font-weight: bold;
+}
+
 h3 {
     font-size: 24px;
     color: green;
@@ -55,6 +61,10 @@ td {
 td.class-count td.course-count {
     width: 20px;
 }
+
+/*td.elapsed-time {
+   visibility: hidden;
+}*/
 
 
 

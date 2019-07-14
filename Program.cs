@@ -8,7 +8,7 @@ namespace OR_Results
 {
     class Program
     {
-        public static List<CompetitorResult> records;
+        public static List<CompetitorResult> results;
         public static List<CoursePunch> coursePunches;
         public static List<Control> controls;
         public static List<Competitor> competitors;
@@ -29,8 +29,14 @@ namespace OR_Results
         {
             Initialise();
             EventDayMontitoring();
-            ParseResults(records);
-            ManipulateData();
+
+            if (Shared.ResultsFileExists())
+            {
+                ParseResults(results);
+                ManipulateData();
+                GenerateResults();
+            }
+
             PerformResults();
         }
 
@@ -86,9 +92,6 @@ namespace OR_Results
         {
             Settings = new Settings();
             ReadSetupFiles();
-
-            CompetitorCourseSummaries = new List<CompetitorResultSummary>();
-
             SetFileWatcher();
         }
 
@@ -103,9 +106,32 @@ namespace OR_Results
 
         private static void EventDayMontitoring()
         {
-            competitors = new CSVHelper<Competitor>().ReadData(Settings.FullPath + "competitors.csv", new Competitor(), ";").ToList();
+            
+            BuildInitialiseFile();
 
-            records = new CSVHelper<CompetitorResult>().ReadData(Settings.FullPath + "results.csv", new CompetitorResult(), ";").ToList();
+            if (Shared.ResultsFileExists())
+                results = new CSVHelper<CompetitorResult>().ReadData(Settings.FullPath + "results.csv", new CompetitorResult(), ";").ToList();
+
+        }
+
+        private static void BuildInitialiseFile()
+        {
+            competitors = new CSVHelper<Competitor>().ReadData(Settings.FullPath + "competitors.csv", new Competitor(), ";").ToList();
+            CompetitorCourseSummaries = new List<CompetitorResultSummary>();
+
+            foreach(var competitor in competitors)
+            {
+                var competitorResultSummary = new CompetitorResultSummary
+                {
+                    SI = competitor.SI,
+                    CourseId = competitor.CourseId,
+                    ClassId = Shared.GetCompetitorClass(competitor.SI),
+                    Status = (int)Status.DidNotStart,
+                    ElapsedTime = TimeSpan.MaxValue
+                    
+                };
+                CompetitorCourseSummaries.Add(competitorResultSummary);
+            }
 
         }
 
@@ -139,7 +165,6 @@ namespace OR_Results
 
         private static void PerformResults()
         {
-            GenerateResults();
             SortResults();
             DisplayResults();
         }
@@ -187,6 +212,7 @@ namespace OR_Results
                 .ThenBy(c=>c.Status)
                 .ThenByDescending(c => c.Score)
                 .ThenBy(c => c.ElapsedTime)
+                .ThenBy(c => Shared.GetName(c.SI))
                 .ToList();
 
             //PrintResults();
@@ -245,18 +271,23 @@ namespace OR_Results
         {
             foreach (var competitorPunches in coursePunches)
             {
-                var competitorCourseSummary = new CompetitorResultSummary();
-                competitorCourseSummary.SI = competitorPunches.SI;
+                //var competitorCourseSummary = new CompetitorResultSummary();
+                var coursePunchSI = competitorPunches.SI;
+                var competitorCourseSummary = CompetitorCourseSummaries.FirstOrDefault(c => c.SI == coursePunchSI);
 
-                competitorCourseSummary.CourseId =
-                    (GetCompetitorCourse(competitorCourseSummary) == null)
-                    ? string.Empty
-                    : GetCompetitorCourse(competitorCourseSummary);
 
-                competitorCourseSummary.ClassId =
-                    (GetCompetitorClass(competitorCourseSummary) == null)
-                    ? string.Empty
-                    : GetCompetitorCourse(competitorCourseSummary);
+
+                //competitorCourseSummary.SI = competitorPunches.SI;
+
+                //competitorCourseSummary.CourseId =
+                //    (GetCompetitorCourse(competitorCourseSummary) == null)
+                //    ? string.Empty
+                //    : GetCompetitorCourse(competitorCourseSummary);
+
+                //competitorCourseSummary.ClassId =
+                //    (GetCompetitorClass(competitorCourseSummary) == null)
+                //    ? string.Empty
+                //    : GetCompetitorCourse(competitorCourseSummary);
 
                 competitorCourseSummary.StartTime = competitorPunches.CompetitorControls[0].CoursePunchTime;
                 if(competitorCourseSummary.StartTime == TimeSpan.Zero)
@@ -283,7 +314,7 @@ namespace OR_Results
                         GetStatus(competitorCourseSummary);
                     }
                 }
-                CompetitorCourseSummaries.Add(competitorCourseSummary);
+                //CompetitorCourseSummaries.Add(competitorCourseSummary);
             }
         }
 
