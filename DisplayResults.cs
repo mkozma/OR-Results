@@ -40,9 +40,22 @@ namespace OR_Results
             html.Append("<div class='container-fluid'>");
 
             html.Append("<div class='row'>");
-            html.Append("<h1>");
+            html.Append("<div class='col-sm'>");
+            html.Append("<h3>");
+            html.Append("Last update: " + Shared.GetCurrentTime());
+            html.Append("</h3>");
+            html.Append("</div>");
+            html.Append("<div class='col-sm'>");
+            html.Append("<h3>");
             html.Append(Program.competition[0].Name);
-            html.Append("</h1>");
+            html.Append("</h3>");
+            html.Append("</div>");
+            html.Append("<div class='col-sm'>");
+            html.Append("<h3>");
+            html.Append("Number of competitors: ");
+            html.Append(Program.CompetitorCourseSummaries.Count.ToString());
+            html.Append("</h3>");
+            html.Append("</div>");
             html.Append("</div>");
 
             html.Append("<div class='row'>");
@@ -87,7 +100,7 @@ namespace OR_Results
 
             FileStream sw = new FileStream("FileStream.html", FileMode.Create);
 
-            var currentDir = @"Z:" + @"\";
+            var currentDir = @"C:\inetpub\wwwroot" + @"\";
 
             var path = currentDir + "index.html";
 
@@ -124,6 +137,7 @@ namespace OR_Results
                 //html.Append("</h3>");
                 //html.Append("</tr>");
 
+                
                 html.Append("<tr class='class-header'>");
                 html.Append("<th class='course-header' scope='col'>");
                 if (htmlHelper == null)
@@ -134,7 +148,8 @@ namespace OR_Results
                 else
                     html.Append(course.course);
                 html.Append("</th>");
-                html.Append("<th scope='col'>Class #</th>");
+                if (course.course != "Score")
+                    html.Append("<th scope='col'>Class #</th>");
                 //html.Append("<th scope='col'>Status</th>");
                 html.Append("<th scope='col'>Status</th>");
                 //html.Append("<th scope='col'>SI</th>");
@@ -184,20 +199,24 @@ namespace OR_Results
                     html.Append("<th scope ='row'>");
                     html.Append(courseCount.ToString());
                     html.Append("</th>");
-                    html.Append("<td class='class-count'>");
-                    if (Shared.GetGenderFromClass(Program.GetCompetitorClass(course.Items[i - 1])) == "men")
+                    if (course.course != "Score")
                     {
-                        mensCount++;
-                        html.Append(mensCount.ToString());
-                    }
-                    else
-                    {
-                        womensCount++;
-                        html.Append(womensCount.ToString());
-                    }
+                        html.Append("<td class='class-count'>");
+                        if (Shared.GetGenderFromClass(Program.GetCompetitorClass(course.Items[i - 1])) == "men")
+                        {
+                            mensCount++;
+                            html.Append(mensCount.ToString());
+                        }
+                        else
+                        {
+                            womensCount++;
+                            html.Append(womensCount.ToString());
+                        }
 
-                    //html.Append(classCount.ToString());
-                    html.Append("</td>");
+                        //html.Append(classCount.ToString());
+                        html.Append("</td>");
+                    }
+                    
                     //html.Append("<td>");
                     //html.Append(Shared.GetEnumValue(course.Items[i-1].Status));
                     //html.Append("</td>");

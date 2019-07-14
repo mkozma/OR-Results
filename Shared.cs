@@ -24,5 +24,10 @@ namespace OR_Results
         {
             return Program.courses.FirstOrDefault(c => c.CourseId == courseId);
         }
+
+        public static string GetCurrentTime()
+        {
+            return DateTime.Now.ToString("HH:mm:ss");
+        }
     }
 }
