@@ -30,7 +30,7 @@ namespace OR_Results
 
             html.Append("<html>");
             html.Append("<head>");
-            //html.Append("<meta http-equiv='refresh' content='5' />");
+            html.Append("<meta http-equiv='refresh' content='5' />");
             html.Append("<Link rel='stylesheet' href='css/bootstrap.min.css'>");
             html.Append("<Link rel='stylesheet' href='css/main.css'>");
 
