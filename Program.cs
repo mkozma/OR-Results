@@ -432,6 +432,7 @@ namespace OR_Results
         private static void DisplayResults()
         {
             var displayResults = new DisplayResults();
+            Console.ReadLine();
         }
 
         private static void ParseResults(List<CompetitorResult> records)
