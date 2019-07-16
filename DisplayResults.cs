@@ -96,7 +96,7 @@ namespace OR_Results
 
             doc.LoadHtml(html.ToString());
 
-            FileStream sw = new FileStream("FileStream.html", FileMode.Create);
+            //FileStream sw = new FileStream("FileStream.html", FileMode.Create);
 
             var currentDir = @"C:\inetpub\wwwroot" + @"\";
 
@@ -241,10 +241,11 @@ namespace OR_Results
                     var elapsedTime = course.Items[i - 1].ElapsedTime;
                     html.Append("<td class='elapsed-time'>");
 
-                    if (elapsedTime != TimeSpan.MaxValue)
-                        html.Append(elapsedTime.ToString());
-                    else
+                    if ((elapsedTime == TimeSpan.MaxValue) ||
+                       (elapsedTime == TimeSpan.Zero))
                         html.Append(string.Empty);
+                    else
+                        html.Append(elapsedTime.ToString());
 
                     html.Append("</td>");
                     html.Append("<td>");

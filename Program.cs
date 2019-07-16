@@ -18,8 +18,9 @@ namespace OR_Results
 
         public static List<CompetitorResultSummary> competitorCourseSummaries;
         private static string Course;
+        private static FileSystemWatcher watcher;
 
-        private const string DATA_PATH = @"C:\Users\mkozm\Or\21\";
+        //private const string DATA_PATH = @"C:\Users\mkozm\Or\21\";
 
         public static List<CompetitorResultSummary> CompetitorCourseSummaries { get; set; }
 
@@ -29,15 +30,8 @@ namespace OR_Results
         {
             Initialise();
             EventDayMontitoring();
+            SetFileWatcher();
 
-            if (Shared.ResultsFileExists())
-            {
-                ParseResults(results);
-                ManipulateData();
-                GenerateResults();
-            }
-
-            PerformResults();
         }
 
 
@@ -47,52 +41,51 @@ namespace OR_Results
             string[] args = Environment.GetCommandLineArgs();
 
             // If a directory is not specified, exit program.
-            if (args.Length != 2)
-            {
-                // Display the proper way to call the program.
-                Console.WriteLine("Usage: Watcher.exe (directory)");
-                return;
-            }
+            //if (args.Length != 2)
+            //{
+            //    // Display the proper way to call the program.
+            //    Console.WriteLine("Usage: Watcher.exe (directory)");
+            //    return;
+            //}
 
             // Create a new FileSystemWatcher and set its properties.
-            using (FileSystemWatcher watcher = new FileSystemWatcher(Settings.DataPath))
+            using (watcher = new FileSystemWatcher(Settings.DataPath))
             {
-                watcher.Path = args[1];
+                //watcher.Path = args[1];
 
                 // Watch for changes in LastAccess and LastWrite times, and
                 // the renaming of files or directories.
-                watcher.NotifyFilter = NotifyFilters.LastAccess
-                                     | NotifyFilters.LastWrite
-                                     | NotifyFilters.FileName
-                                     | NotifyFilters.DirectoryName;
+                watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.LastAccess;
 
-                // Only watch text files.
-                watcher.Filter = "*.txt";
+                watcher.Filter = "*.csv";
 
                 // Add event handlers.
                 watcher.Changed += OnChanged;
-                //watcher.Created += OnChanged;
-                //watcher.Deleted += OnChanged;
-                //watcher.Renamed += OnRenamed;
 
                 // Begin watching.
                 watcher.EnableRaisingEvents = true;
 
                 // Wait for the user to quit the program.
-                Console.WriteLine("Press 'q' to quit the sample.");
+                Console.WriteLine("OR Results Display  (Press 'q' to quit the sample.)");
                 while (Console.Read() != 'q') ;
             }
         }
 
-        private static void OnChanged(object source, FileSystemEventArgs e) =>
+        private static void OnChanged(object source, FileSystemEventArgs e)
+        {
             // Specify what is done when a file is changed, created, or deleted.
-            Console.WriteLine($"File: {e.FullPath} {e.ChangeType}");
+            Console.WriteLine($"File: {e.Name} {e.ChangeType}");
+            //watcher.EnableRaisingEvents = false;
+            EventDayMontitoring();
+        }
 
         private static void Initialise()
         {
             Settings = new Settings();
             ReadSetupFiles();
-            SetFileWatcher();
+            //BuildInitialiseFile();
+            //PerformResults();
+
         }
 
         private static void ReadSetupFiles()
@@ -106,17 +99,25 @@ namespace OR_Results
 
         private static void EventDayMontitoring()
         {
-            
             BuildInitialiseFile();
 
             if (Shared.ResultsFileExists())
+            {
                 results = new CSVHelper<CompetitorResult>().ReadData(Settings.FullPath + "results.csv", new CompetitorResult(), ";").ToList();
+                ParseResults(results);
+                ManipulateData();
+                GenerateResults();
+            }
 
+            PerformResults();
         }
 
         private static void BuildInitialiseFile()
         {
             competitors = new CSVHelper<Competitor>().ReadData(Settings.FullPath + "competitors.csv", new Competitor(), ";").ToList();
+            if (competitors == null)
+                return;
+
             CompetitorCourseSummaries = new List<CompetitorResultSummary>();
 
             foreach(var competitor in competitors)
@@ -132,7 +133,6 @@ namespace OR_Results
                 };
                 CompetitorCourseSummaries.Add(competitorResultSummary);
             }
-
         }
 
         private static void ManipulateData()
@@ -155,14 +155,6 @@ namespace OR_Results
                 competitor.CompetitorControls = newControlPuches;
             }
         }
-
-      
-        private static void ReadSettings()
-        {
-            
-            
-        }
-
         private static void PerformResults()
         {
             SortResults();
@@ -183,9 +175,7 @@ namespace OR_Results
 
                 competitorCourseSummary.StartTime = competitorPunches.CompetitorControls[0].CoursePunchTime;
                 if (competitorCourseSummary.StartTime == TimeSpan.Zero)
-                {
                     competitorCourseSummary.Status = (int)Status.DidNotStart;
-                }
                 else
                 {
                     if (competitorPunches.CompetitorControls.Any(s => s.CoursePunchName == "F"))
@@ -275,31 +265,17 @@ namespace OR_Results
                 var coursePunchSI = competitorPunches.SI;
                 var competitorCourseSummary = CompetitorCourseSummaries.FirstOrDefault(c => c.SI == coursePunchSI);
 
+                var hasStart = competitorPunches.CompetitorControls.Any(s => s.CoursePunchName == "S");
 
+                if (!hasStart)
 
-                //competitorCourseSummary.SI = competitorPunches.SI;
-
-                //competitorCourseSummary.CourseId =
-                //    (GetCompetitorCourse(competitorCourseSummary) == null)
-                //    ? string.Empty
-                //    : GetCompetitorCourse(competitorCourseSummary);
-
-                //competitorCourseSummary.ClassId =
-                //    (GetCompetitorClass(competitorCourseSummary) == null)
-                //    ? string.Empty
-                //    : GetCompetitorCourse(competitorCourseSummary);
-
-                competitorCourseSummary.StartTime = competitorPunches.CompetitorControls[0].CoursePunchTime;
-                if(competitorCourseSummary.StartTime == TimeSpan.Zero)
-                {
+                //if (competitorCourseSummary.StartTime == TimeSpan.Zero)
                     competitorCourseSummary.Status = (int)Status.DidNotStart;
-                }
                 else
                 {
                     var courseVariantlastControl = GetCourseLastControlName(competitorCourseSummary.CourseId);
 
                     //compare the last course variant control to the competitors last control
-                    //if (courseVariantlastControl == competitorPunches.CompetitorControls[1].CoursePunchName)
                     if (competitorPunches.CompetitorControls.Any(s => s.CoursePunchName == "F"))
                     {
                         competitorCourseSummary.FinishTime = competitorPunches.CompetitorControls.SingleOrDefault(s => s.CoursePunchName == "F").CoursePunchTime;
@@ -310,11 +286,8 @@ namespace OR_Results
                         CalculateScore(competitorPunches.CompetitorControls, competitorCourseSummary);
                     }
                     else
-                    {
                         GetStatus(competitorCourseSummary);
-                    }
                 }
-                //CompetitorCourseSummaries.Add(competitorCourseSummary);
             }
         }
 
@@ -432,7 +405,8 @@ namespace OR_Results
         private static void DisplayResults()
         {
             var displayResults = new DisplayResults();
-            Console.ReadLine();
+            //watcher.EnableRaisingEvents = true;
+            //Console.ReadLine();
         }
 
         private static void ParseResults(List<CompetitorResult> records)
