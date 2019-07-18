@@ -16,11 +16,7 @@ namespace OR_Results
         public static List<CourseVariant> courseVariants;
         public static List<Competition> competition;
 
-        public static List<CompetitorResultSummary> competitorCourseSummaries;
-        private static string Course;
         private static FileSystemWatcher watcher;
-
-        //private const string DATA_PATH = @"C:\Users\mkozm\Or\21\";
 
         public static List<CompetitorResultSummary> CompetitorCourseSummaries { get; set; }
 
@@ -31,41 +27,23 @@ namespace OR_Results
             Initialise();
             EventDayMontitoring();
             SetFileWatcher();
-
         }
-
 
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
         private static void SetFileWatcher()
         {
-            string[] args = Environment.GetCommandLineArgs();
-
-            // If a directory is not specified, exit program.
-            //if (args.Length != 2)
-            //{
-            //    // Display the proper way to call the program.
-            //    Console.WriteLine("Usage: Watcher.exe (directory)");
-            //    return;
-            //}
 
             // Create a new FileSystemWatcher and set its properties.
             using (watcher = new FileSystemWatcher(Settings.DataPath))
             {
-                //watcher.Path = args[1];
-
-                // Watch for changes in LastAccess and LastWrite times, and
-                // the renaming of files or directories.
                 watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.LastAccess;
 
-                watcher.Filter = "*.csv";
+                watcher.Filter = Constants.CSV_FILE_TYPE;
 
-                // Add event handlers.
                 watcher.Changed += OnChanged;
 
-                // Begin watching.
                 watcher.EnableRaisingEvents = true;
 
-                // Wait for the user to quit the program.
                 Console.WriteLine("OR Results Display  (Press 'q' to quit the sample.)");
                 while (Console.Read() != 'q') ;
             }
@@ -73,9 +51,7 @@ namespace OR_Results
 
         private static void OnChanged(object source, FileSystemEventArgs e)
         {
-            // Specify what is done when a file is changed, created, or deleted.
-            Console.WriteLine($"File: {e.Name} {e.ChangeType}");
-            //watcher.EnableRaisingEvents = false;
+            Console.WriteLine($"{DateTime.Now} File: {e.Name} {e.ChangeType}");
             EventDayMontitoring();
         }
 
@@ -83,18 +59,15 @@ namespace OR_Results
         {
             Settings = new Settings();
             ReadSetupFiles();
-            //BuildInitialiseFile();
-            //PerformResults();
-
         }
 
         private static void ReadSetupFiles()
         {
-            competition = new CSVHelper<Competition>().ReadData(Settings.FullPath + "competition.csv", new Competition(), ";").ToList();
-            controls = new CSVHelper<Control>().ReadData(Settings.FullPath + "controls.csv", new Control()).ToList();
-            courses = new CSVHelper<Course>().ReadData(Settings.FullPath + "courses.csv", new Course()).ToList();
+            competition = new CSVHelper<Competition>().ReadData(Settings.FullPath + Constants.COMPETITION_FILE, new Competition(), ";").ToList();
+            controls = new CSVHelper<Control>().ReadData(Settings.FullPath + Constants.CONTROLS_FILE, new Control()).ToList();
+            courses = new CSVHelper<Course>().ReadData(Settings.FullPath + Constants.COURSES_FILE, new Course()).ToList();
 
-            courseVariants = new CSVHelper<CourseVariant>().ReadData(Settings.FullPath + "courseVariants.csv", new CourseVariant()).ToList();
+            courseVariants = new CSVHelper<CourseVariant>().ReadData(Settings.FullPath + Constants.COURSE_VARIANTS_FILE, new CourseVariant()).ToList();
         }
 
         private static void EventDayMontitoring()
@@ -103,7 +76,7 @@ namespace OR_Results
 
             if (Shared.ResultsFileExists())
             {
-                results = new CSVHelper<CompetitorResult>().ReadData(Settings.FullPath + "results.csv", new CompetitorResult(), ";").ToList();
+                results = new CSVHelper<CompetitorResult>().ReadData(Settings.FullPath + Constants.RESULTS_FILE, new CompetitorResult(), Constants.SEMICOLON).ToList();
                 ParseResults(results);
                 ManipulateData();
                 GenerateResults();
@@ -114,7 +87,7 @@ namespace OR_Results
 
         private static void BuildInitialiseFile()
         {
-            competitors = new CSVHelper<Competitor>().ReadData(Settings.FullPath + "competitors.csv", new Competitor(), ";").ToList();
+            competitors = new CSVHelper<Competitor>().ReadData(Settings.FullPath + Constants.COMPETITORS_FILE, new Competitor(), Constants.SEMICOLON).ToList();
             if (competitors == null)
                 return;
 
@@ -129,7 +102,6 @@ namespace OR_Results
                     ClassId = Shared.GetCompetitorClass(competitor.SI),
                     Status = (int)Status.DidNotStart,
                     ElapsedTime = TimeSpan.MaxValue
-                    
                 };
                 CompetitorCourseSummaries.Add(competitorResultSummary);
             }
@@ -178,9 +150,9 @@ namespace OR_Results
                     competitorCourseSummary.Status = (int)Status.DidNotStart;
                 else
                 {
-                    if (competitorPunches.CompetitorControls.Any(s => s.CoursePunchName == "F"))
+                    if (competitorPunches.CompetitorControls.Any(s => s.CoursePunchName == Constants.FINISH_PUNCH))
                     {
-                        competitorCourseSummary.FinishTime = competitorPunches.CompetitorControls.SingleOrDefault(s => s.CoursePunchName == "F").CoursePunchTime;
+                        competitorCourseSummary.FinishTime = competitorPunches.CompetitorControls.SingleOrDefault(s => s.CoursePunchName == Constants.FINISH_PUNCH).CoursePunchTime;
                         competitorCourseSummary.Status = (int)Status.Finished;
 
                         CalculateScore(competitorPunches.CompetitorControls, competitorCourseSummary);
@@ -196,7 +168,6 @@ namespace OR_Results
 
         private static void SortResults()
         {
-            
             CompetitorCourseSummaries = CompetitorCourseSummaries
                 .OrderBy(c=>c.CourseId)
                 .ThenBy(c=>c.Status)
@@ -204,8 +175,6 @@ namespace OR_Results
                 .ThenBy(c => c.ElapsedTime)
                 .ThenBy(c => Shared.GetName(c.SI))
                 .ToList();
-
-            //PrintResults();
         }
 
         private static void PrintResults()
@@ -215,7 +184,6 @@ namespace OR_Results
             var classCount = 0;
             var elapsedTime = string.Empty;
             var className = string.Empty;
-
 
             var prevCourse = string.Empty;
             var prevClass = string.Empty;
@@ -261,24 +229,21 @@ namespace OR_Results
         {
             foreach (var competitorPunches in coursePunches)
             {
-                //var competitorCourseSummary = new CompetitorResultSummary();
                 var coursePunchSI = competitorPunches.SI;
                 var competitorCourseSummary = CompetitorCourseSummaries.FirstOrDefault(c => c.SI == coursePunchSI);
 
-                var hasStart = competitorPunches.CompetitorControls.Any(s => s.CoursePunchName == "S");
+                var hasStart = competitorPunches.CompetitorControls.Any(s => s.CoursePunchName == Constants.START_PUNCH);
 
                 if (!hasStart)
-
-                //if (competitorCourseSummary.StartTime == TimeSpan.Zero)
                     competitorCourseSummary.Status = (int)Status.DidNotStart;
                 else
                 {
                     var courseVariantlastControl = GetCourseLastControlName(competitorCourseSummary.CourseId);
 
                     //compare the last course variant control to the competitors last control
-                    if (competitorPunches.CompetitorControls.Any(s => s.CoursePunchName == "F"))
+                    if (competitorPunches.CompetitorControls.Any(s => s.CoursePunchName == Constants.FINISH_PUNCH))
                     {
-                        competitorCourseSummary.FinishTime = competitorPunches.CompetitorControls.SingleOrDefault(s => s.CoursePunchName == "F").CoursePunchTime;
+                        competitorCourseSummary.FinishTime = competitorPunches.CompetitorControls.SingleOrDefault(s => s.CoursePunchName == Constants.FINISH_PUNCH).CoursePunchTime;
                         competitorCourseSummary.FinishTime = competitorPunches.CompetitorControls[1].CoursePunchTime;
                         competitorCourseSummary.Status = (int)Status.Finished;
                         CalculateElapsedTime(competitorCourseSummary);
@@ -332,7 +297,6 @@ namespace OR_Results
                 return (int)Status.Mispunch;
 
             return (int)Status.Finished;
-
         }
 
         private static bool CompareCoursePunchesToCompetitorPunches(List<string> courseVariantList, List<string> validCompetitorPunches, bool isValid)
@@ -361,7 +325,7 @@ namespace OR_Results
             var newList = new List<string>();
             foreach (var controlPunch in competitorPunchesList)
             {
-                if (!new[] { "S", "F" }.Contains(controlPunch))
+                if (!new[] { Constants.START_PUNCH, Constants.FINISH_PUNCH }.Contains(controlPunch))
                 {
                     newList.Add(controlPunch);
                 }
@@ -371,7 +335,7 @@ namespace OR_Results
 
         private static bool IsScoreCourse(string courseId)
         {
-            if (courses.First(c => c.CourseId == courseId).CourseType == "Score")
+            if (courses.First(c => c.CourseId == courseId).CourseType == Constants.COURSE_TYPE_SCORE)
                 return true;
             return false;
         }
@@ -404,9 +368,7 @@ namespace OR_Results
 
         private static void DisplayResults()
         {
-            var displayResults = new DisplayResults();
-            //watcher.EnableRaisingEvents = true;
-            //Console.ReadLine();
+            var displayResults = new DisplayResults(new Settings());
         }
 
         private static void ParseResults(List<CompetitorResult> records)
@@ -424,14 +386,14 @@ namespace OR_Results
 
                 var startCompetitorControl = new CompetitorControl
                 {
-                    CoursePunchName = "S",
+                    CoursePunchName = Constants.START_PUNCH,
                     CoursePunchTime = ParseControlPunch(record.StartPunchTime)
                 };
                 competitorControls.Add(startCompetitorControl);
 
                 var finishCompetitorControl = new CompetitorControl
                 {
-                    CoursePunchName = "F",
+                    CoursePunchName = Constants.FINISH_PUNCH,
                     CoursePunchTime = ParseControlPunch(record.FinishPunchTime)
                 };
                 competitorControls.Add(finishCompetitorControl);
@@ -439,20 +401,19 @@ namespace OR_Results
 
                 foreach (var row in record.ControlPunches)
                 {
-                        int number;
-                        if (Int32.TryParse(row, out number)== true)
+                    int number;
+                    if (Int32.TryParse(row, out number)== true)
+                    {
+                        competitorControl = new CompetitorControl{  CoursePunchName = row };
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(row))
                         {
-                            //competitorControl.CoursePunchName = row;
-                            competitorControl = new CompetitorControl{  CoursePunchName = row };
+                            competitorControl.CoursePunchTime = ParseControlPunch(row);
+                            competitorControls.Add(competitorControl);
                         }
-                        else
-                        {
-                            if (!string.IsNullOrEmpty(row))
-                            {
-                                competitorControl.CoursePunchTime = ParseControlPunch(row);
-                                competitorControls.Add(competitorControl);
-                            }
-                        }
+                    }
                 }
                 coursePunch.CompetitorControls = competitorControls;
 
@@ -462,7 +423,7 @@ namespace OR_Results
 
         private static TimeSpan ParseControlPunch(string item)
         {
-            int index = item.IndexOf(':');
+            int index = item.IndexOf(Constants.COLON);
             string theDateStr = item.Substring(index + 1, item.Length - 2);
 
             return ParseDateTime(item);
@@ -475,35 +436,28 @@ namespace OR_Results
 
         private static TimeSpan ParseDateTime(string dateTime)
         {
-            char semiColon = ':';
-            char hyphen = '-';
 
-            if (dateTime.Contains(hyphen) == true) { return new TimeSpan(0, 0, 0); }
+            if (dateTime.Contains(Constants.HYPHEN) == true) { return new TimeSpan(0, 0, 0); }
 
-            var index = dateTime.IndexOf(semiColon);
+            var index = dateTime.IndexOf(Constants.COLON);
             var course = dateTime.Substring(0, index);
             var theRest = dateTime.Substring(index + 1, dateTime.Length-course.Length - 1);
 
-            index = theRest.IndexOf(semiColon);
+            index = theRest.IndexOf(Constants.COLON);
             var day = theRest.Substring(0, index);
             theRest = theRest.Substring(index + 1, theRest.Length- day.Length-1);
 
-            index = theRest.IndexOf(semiColon);
+            index = theRest.IndexOf(Constants.COLON);
             var hours = theRest.Substring(0, index);
             theRest = theRest.Substring(index + 1, theRest.Length - hours.Length - 1);
 
-            index = theRest.IndexOf(semiColon);
+            index = theRest.IndexOf(Constants.COLON);
             var minutes = theRest.Substring(0, index);
             var seconds = theRest.Substring(index + 1, theRest.Length - minutes.Length - 1);
 
             return new TimeSpan(Convert.ToInt16(hours), Convert.ToInt16(minutes), Convert.ToInt16(seconds));
         }
-
-        private static string ParseEventId(string item)
-        {
-            int index = item.IndexOf(':');
-            return item.Substring(0, index);
-        }
+        
     }
 
 
