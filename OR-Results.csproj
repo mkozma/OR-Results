@@ -98,6 +98,7 @@
     <Compile Include="CompetitorResult.cs" />
     <Compile Include="CompetitorResultSummary.cs" />
     <Compile Include="CompetitorData.cs" />
+    <Compile Include="Constants.cs" />
     <Compile Include="Control.cs" />
     <Compile Include="ControlPunch.cs" />
     <Compile Include="Course.cs" />

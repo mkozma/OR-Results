@@ -11,8 +11,13 @@ namespace OR_Results
     {
         private string competition { get; set; }
         private string dataPath { get; set; }
+
+        private string webServerFileLocation;
+        private bool openLocalBrowser;
         private string fullpath;
-        private string backSlash = "\\";
+        private const string backSlash = "\\";
+
+        private const string webFileName = "index.html";
 
         public  string FullPath 
         {
@@ -21,12 +26,25 @@ namespace OR_Results
 
         public string DataPath
         {
-            get
-            {
-                return dataPath;
-            }
+            get { return dataPath; }
         }
 
+        public string WebServerFileLocation
+        {
+            get { return webServerFileLocation;  }
+            set { webServerFileLocation = value;  }
+        }
+
+        public string WebServerFilePath
+        {
+            get { return webServerFileLocation + webFileName; }
+        }
+
+        public bool OpenLocalBrowser
+        {
+            get { return openLocalBrowser; }
+            set { openLocalBrowser = value; }
+        }
 
         public Settings()
         {
@@ -37,6 +55,8 @@ namespace OR_Results
         {
             competition = ConfigurationManager.AppSettings["competition"];
             dataPath = ConfigurationManager.AppSettings["datapath"];
+            webServerFileLocation = ConfigurationManager.AppSettings["webServerFileLocation"];
+            openLocalBrowser = (ConfigurationManager.AppSettings["openLocalBrowser"]=="true"? true: false );
         }
     }
 }
