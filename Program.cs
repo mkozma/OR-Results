@@ -45,6 +45,8 @@ namespace OR_Results
                 watcher.EnableRaisingEvents = true;
 
                 Console.WriteLine("OR Results Display  (Press 'q' to quit the sample.)");
+                Console.WriteLine("Program launched:" + DateTime.Now.ToString(("dd/MM/yyyy hh:mm")));
+                Console.WriteLine("Waiting for changes...");
                 while (Console.Read() != 'q') ;
             }
         }
