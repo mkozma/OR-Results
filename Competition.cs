@@ -12,7 +12,7 @@ namespace OR_Results
         public string Name { get; set; }
         public int Field3 { get; set; }
         public int Field4 { get; set; }
-        public int Field5 { get; set; }
+        public long ZeroTime { get; set; }
         public bool Field6 { get; set; }
         public bool Field7 { get; set; }
         public bool Field8 { get; set; }
@@ -40,7 +40,7 @@ namespace OR_Results
         public string Field30 { get; set; }
         public string Field31 { get; set; }
         public string Field32 { get; set; }
-        public string Field33 { get; set; }
+        //public string Field33 { get; set; }
 
 
     }

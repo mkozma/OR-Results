@@ -27,6 +27,6 @@ namespace OR_Results
         public int Field10 { get; set; }
         public string Field11 { get; set; }
         public int Field12 { get; set; }
-        public bool Field13 { get; set; }
+        //public bool Field13 { get; set; }
     }
 }

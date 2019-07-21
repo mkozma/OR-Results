@@ -66,6 +66,8 @@ namespace OR_Results
         private static void ReadSetupFiles()
         {
             competition = new CSVHelper<Competition>().ReadData(Settings.FullPath + Constants.COMPETITION_FILE, new Competition(), ";").ToList();
+
+            Settings.ZeroTime = Shared.GetTimeFromMilliseconds( competition[0].ZeroTime);
             controls = new CSVHelper<Control>().ReadData(Settings.FullPath + Constants.CONTROLS_FILE, new Control()).ToList();
             courses = new CSVHelper<Course>().ReadData(Settings.FullPath + Constants.COURSES_FILE, new Course()).ToList();
 
@@ -135,38 +137,38 @@ namespace OR_Results
             DisplayResults();
         }
 
-        private static void CheckForStart()
-        {
-            foreach (var competitorPunches in coursePunches)
-            {
-                var competitorCourseSummary = new CompetitorResultSummary();
-                competitorCourseSummary.SI = competitorPunches.SI;
+        //private static void CheckForStart()
+        //{
+        //    foreach (var competitorPunches in coursePunches)
+        //    {
+        //        var competitorCourseSummary = new CompetitorResultSummary();
+        //        competitorCourseSummary.SI = competitorPunches.SI;
 
-                competitorCourseSummary.CourseId =
-                    (GetCompetitorCourse(competitorCourseSummary) == null)
-                    ? string.Empty
-                    : GetCompetitorCourse(competitorCourseSummary);
+        //        competitorCourseSummary.CourseId =
+        //            (GetCompetitorCourse(competitorCourseSummary) == null)
+        //            ? string.Empty
+        //            : GetCompetitorCourse(competitorCourseSummary);
 
-                competitorCourseSummary.StartTime = competitorPunches.CompetitorControls[0].CoursePunchTime;
-                if (competitorCourseSummary.StartTime == TimeSpan.Zero)
-                    competitorCourseSummary.Status = (int)Status.DidNotStart;
-                else
-                {
-                    if (competitorPunches.CompetitorControls.Any(s => s.CoursePunchName == Constants.FINISH_PUNCH))
-                    {
-                        competitorCourseSummary.FinishTime = competitorPunches.CompetitorControls.SingleOrDefault(s => s.CoursePunchName == Constants.FINISH_PUNCH).CoursePunchTime;
-                        competitorCourseSummary.Status = (int)Status.Finished;
+        //        competitorCourseSummary.StartTime = competitorPunches.CompetitorControls[0].CoursePunchTime;
+        //        if (competitorCourseSummary.StartTime == TimeSpan.Zero)
+        //            competitorCourseSummary.Status = (int)Status.DidNotStart;
+        //        else
+        //        {
+        //            if (competitorPunches.CompetitorControls.Any(s => s.CoursePunchName == Constants.FINISH_PUNCH))
+        //            {
+        //                competitorCourseSummary.FinishTime = competitorPunches.CompetitorControls.SingleOrDefault(s => s.CoursePunchName == Constants.FINISH_PUNCH).CoursePunchTime;
+        //                competitorCourseSummary.Status = (int)Status.Finished;
 
-                        CalculateScore(competitorPunches.CompetitorControls, competitorCourseSummary);
-                    }
-                    else
-                    {
-                        GetStatus(competitorCourseSummary);
-                    }
-                }
-                CompetitorCourseSummaries.Add(competitorCourseSummary);
-            }
-        }
+        //                CalculateScore(competitorPunches.CompetitorControls, competitorCourseSummary);
+        //            }
+        //            else
+        //            {
+        //                GetStatus(competitorCourseSummary);
+        //            }
+        //        }
+        //        CompetitorCourseSummaries.Add(competitorCourseSummary);
+        //    }
+        //}
 
         private static void SortResults()
         {
@@ -245,6 +247,7 @@ namespace OR_Results
                     //compare the last course variant control to the competitors last control
                     if (competitorPunches.CompetitorControls.Any(s => s.CoursePunchName == Constants.FINISH_PUNCH))
                     {
+                        competitorCourseSummary.StartTime = competitorPunches.CompetitorControls[0].CoursePunchTime;
                         competitorCourseSummary.FinishTime = competitorPunches.CompetitorControls.SingleOrDefault(s => s.CoursePunchName == Constants.FINISH_PUNCH).CoursePunchTime;
                         competitorCourseSummary.FinishTime = competitorPunches.CompetitorControls[1].CoursePunchTime;
                         competitorCourseSummary.Status = (int)Status.Finished;
@@ -278,7 +281,10 @@ namespace OR_Results
         {
             competitorCourseSummary.CourseId = GetCompetitorCourse(competitorCourseSummary);
             if ((IsScoreCourse(competitorCourseSummary.CourseId)) && (competitorCourseSummary.FinishTime != null))
+            {
                 competitorCourseSummary.Score = CalculateScoreCoursePoints(competitorPunches);
+                competitorCourseSummary.Penalty = CheckForPenalties(competitorCourseSummary);
+            }
             else
                 competitorCourseSummary.Status = CheckLineCourse(competitorCourseSummary.CourseId, competitorPunches);
         }
@@ -360,7 +366,26 @@ namespace OR_Results
                 var control = controls.FirstOrDefault(s => s.Name == competitorControl.CoursePunchName);
                 amount += (control == null) ? 0 : control.Score;
             }
+
+            //CheckForPenalties(coursePunches);
+
             return amount;
+        }
+
+        private static int CheckForPenalties(CompetitorResultSummary competitorResultSummary)
+        {
+            var courseTimeLimit = courses.FirstOrDefault(c => c.CourseId == competitorResultSummary.CourseId).TimeLimit;
+            var penaltyPointsPerMinute = courses.FirstOrDefault(c => c.CourseId == competitorResultSummary.CourseId).PenaltyPointsPerMinute;
+
+            double timeSpanMinutes = competitorResultSummary.ElapsedTime.Value.TotalMinutes;
+
+            var x = (int)Math.Ceiling(timeSpanMinutes);// - courseTimeLimit
+            var y = x -  Convert.ToInt16( courseTimeLimit);
+
+            return (y > 0) ? (y * Convert.ToInt16(penaltyPointsPerMinute)) : 0;
+
+            //return 0;
+
         }
 
         private static void CalculateElapsedTime(CompetitorResultSummary competitorCourseSummary)
@@ -381,15 +406,37 @@ namespace OR_Results
 
             foreach (var record in records)
             {
+                if (!isValidSI(record.SI))
+                {
+                    break;
+                }
+
                 var coursePunch = new CoursePunch();
                 coursePunch.SI = record.SI;
                 var competitorControls = new List<CompetitorControl>();
                 var competitorControl = new CompetitorControl();
 
+                var course = Shared.GetCourseBySI(record.SI);
+                if(course == null)
+                {
+                    continue;
+                }
+                var courseStartTime = Convert.ToInt64(course.CourseStartTime);
+
+                var useCourseTime = false;
+                var recordStartTime = record.StartPunchTime;
+                var courseStartTimeAsTimeSpan = TimeSpan.MinValue;
+
+                if (recordStartTime[0] == Constants.HYPHEN)
+                {
+                    courseStartTimeAsTimeSpan = Shared.GetTimeFromMilliseconds((long)courseStartTime);
+                    useCourseTime = true;
+                }
+
                 var startCompetitorControl = new CompetitorControl
                 {
                     CoursePunchName = Constants.START_PUNCH,
-                    CoursePunchTime = ParseControlPunch(record.StartPunchTime)
+                    CoursePunchTime = (useCourseTime)? courseStartTimeAsTimeSpan :  ParseControlPunch(recordStartTime)
                 };
                 competitorControls.Add(startCompetitorControl);
 
@@ -423,6 +470,13 @@ namespace OR_Results
             }
         }
 
+        private static bool isValidSI(int sI)
+        {
+            //throw new NotImplementedException();
+            //check result SI entered 
+            return competitors.Any(c => c.SI == sI);
+        }
+
         private static TimeSpan ParseControlPunch(string item)
         {
             int index = item.IndexOf(Constants.COLON);
@@ -439,7 +493,12 @@ namespace OR_Results
         private static TimeSpan ParseDateTime(string dateTime)
         {
 
-            if (dateTime.Contains(Constants.HYPHEN) == true) { return new TimeSpan(0, 0, 0); }
+            if (dateTime.Contains(Constants.HYPHEN) == true)
+            {
+                //check for mass start time
+
+                return new TimeSpan(0, 0, 0);
+            }
 
             var index = dateTime.IndexOf(Constants.COLON);
             var course = dateTime.Substring(0, index);

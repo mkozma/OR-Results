@@ -56,8 +56,10 @@ namespace OR_Results
             html.Append("</div>");
             html.Append("<div class='col-sm'>");
             html.Append("<h3>");
-            html.Append("Number of competitors: ");
+            html.Append("No. of competitors: ");
             html.Append(Program.CompetitorCourseSummaries.Count.ToString());
+            html.Append("Remaining: ");
+            html.Append(Shared.NumberOfCompetitorsRemaining(Program.CompetitorCourseSummaries));
             html.Append("</h3>");
             html.Append("</div>");
             html.Append("</div>");

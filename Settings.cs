@@ -46,6 +46,8 @@ namespace OR_Results
             set { openLocalBrowser = value; }
         }
 
+        public TimeSpan ZeroTime { get; set; }
+
         public Settings()
         {
             ReadAppConfigSettings();

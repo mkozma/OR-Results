@@ -13,5 +13,7 @@ namespace OR_Results
         public TimeSpan? FinishTime { get; set; }
         public TimeSpan? ElapsedTime { get; set; }
         public int Score { get; set; }
+        public int Penalty { get; set; }
+        public int Bonus { get; set; }
     }
 }
