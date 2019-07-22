@@ -79,16 +79,16 @@ namespace OR_Results
             }
             return new TimeSpan(h, m, s);
 
-            //long milliSec = (long)(input / 1000);
-            //DateTime startTime = new DateTime(1970, 1, 1);
-
-            //TimeSpan time = TimeSpan.FromMilliseconds(milliSec);
-            //return startTime.Add(time);
         } 
 
         public static int NumberOfCompetitorsRemaining(List<CompetitorResultSummary> competitorResultSummaries)
         {
             return competitorResultSummaries.Select(c => c.Status == (int)Status.Started).Count();
+        }
+
+        public static string GetCourseTypeByCourse(string courseId)
+        {
+            return Program.courses.SingleOrDefault(c => c.CourseId == courseId).CourseType;
         }
     }
 }

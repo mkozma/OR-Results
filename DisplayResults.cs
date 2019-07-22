@@ -34,7 +34,7 @@ namespace OR_Results
         {
             html.Append("<html>");
             html.Append("<head>");
-            html.Append("<meta http-equiv='refresh' content='5' />");
+            //html.Append("<meta http-equiv='refresh' content='5' />");
             html.Append("<Link rel='stylesheet' href='css/bootstrap.min.css'>");
             html.Append("<Link rel='stylesheet' href='css/main.css'>");
 
@@ -136,16 +136,22 @@ namespace OR_Results
                     html.Append(course.course);
                 html.Append("</th>");
 
-                if (course.course != Constants.COURSE_TYPE_SCORE)
+                if (Shared.GetCourseTypeByCourse(course.course) != Constants.COURSE_TYPE_SCORE)
                     html.Append("<th scope='col'>Class #</th>");
                 html.Append("<th scope='col'>Status</th>");
                 html.Append("<th scope='col'>Name</th>");
                 html.Append("<th scope='col'>Time</th>");
 
-                if (course.course == Constants.COURSE_TYPE_SCORE)
+                if (Shared.GetCourseTypeByCourse( course.course) == Constants.COURSE_TYPE_SCORE)
+                {
                     html.Append("<th scope='col'>Score</th>");
+                    html.Append("<th scope='col'>Penalty</th>");
+                }
                 else
+                {
                     html.Append("<th scope='col'></th>");
+                    html.Append("<th scope='col'></th>");
+                }
 
                 html.Append("</tr>");
                 html.Append("</thead>");
@@ -183,7 +189,7 @@ namespace OR_Results
                     html.Append(courseCount.ToString());
                     html.Append("</th>");
 
-                    if (course.course != Constants.COURSE_TYPE_SCORE)
+                    if (Shared.GetCourseTypeByCourse(course.course) != Constants.COURSE_TYPE_SCORE)
                     {
                         html.Append("<td class='class-count'>");
                         if (Shared.GetGenderFromClass(Program.GetCompetitorClass(course.Items[i - 1])) == Constants.CLASS_TYPE_MEN) 
@@ -228,6 +234,9 @@ namespace OR_Results
                     html.Append("</td>");
                     html.Append("<td>");
                     html.Append(score = (course.Items[i - 1].Score == 0) ? string.Empty : course.Items[i - 1].Score.ToString());
+                    html.Append("</td>");
+                    html.Append("<td>");
+                    html.Append(score = (course.Items[i - 1].Penalty == 0) ? string.Empty : course.Items[i - 1].Penalty.ToString());
                     html.Append("</td>");
                     html.Append("</tr>");
                     prevCourse = course.course;
