@@ -427,7 +427,7 @@ namespace OR_Results
                 var recordStartTime = record.StartPunchTime;
                 var courseStartTimeAsTimeSpan = TimeSpan.MinValue;
 
-                if (recordStartTime[0] == Constants.HYPHEN)
+                if (recordStartTime == Constants.NULL_RECORD)
                 {
                     courseStartTimeAsTimeSpan = Shared.GetTimeFromMilliseconds((long)courseStartTime);
                     useCourseTime = true;
@@ -493,7 +493,7 @@ namespace OR_Results
         private static TimeSpan ParseDateTime(string dateTime)
         {
 
-            if (dateTime.Contains(Constants.HYPHEN) == true)
+            if (dateTime == Constants.NULL_RECORD)
             {
                 //check for mass start time
 

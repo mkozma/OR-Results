@@ -83,7 +83,10 @@ namespace OR_Results
 
         public static int NumberOfCompetitorsRemaining(List<CompetitorResultSummary> competitorResultSummaries)
         {
-            return competitorResultSummaries.Select(c => c.Status == (int)Status.Started).Count();
+            var numberStarted = competitorResultSummaries.Select(c => c.Status == (int)Status.Started).Count();
+            var total = competitorResultSummaries.Count();
+
+            return total - numberStarted;
         }
 
         public static string GetCourseTypeByCourse(string courseId)

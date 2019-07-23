@@ -56,8 +56,9 @@ namespace OR_Results
             html.Append("</div>");
             html.Append("<div class='col-sm'>");
             html.Append("<h3>");
-            html.Append("No. of competitors: ");
+            html.Append("Competitors: ");
             html.Append(Program.CompetitorCourseSummaries.Count.ToString());
+            html.Append(" ");
             html.Append("Remaining: ");
             html.Append(Shared.NumberOfCompetitorsRemaining(Program.CompetitorCourseSummaries));
             html.Append("</h3>");
@@ -226,7 +227,8 @@ namespace OR_Results
                     html.Append("<td class='elapsed-time'>");
 
                     if ((elapsedTime == TimeSpan.MaxValue) ||
-                       (elapsedTime == TimeSpan.Zero))
+                       (elapsedTime == TimeSpan.Zero) ||
+                       (course.Items[i - 1].Status != (int)Status.Finished))
                         html.Append(string.Empty);
                     else
                         html.Append(elapsedTime.ToString());
