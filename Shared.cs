@@ -93,5 +93,10 @@ namespace OR_Results
         {
             return Program.courses.SingleOrDefault(c => c.CourseId == courseId).CourseType;
         }
+
+        public static bool IsFileExists(string filename)
+        {
+            return File.Exists(filename);
+        }
     }
 }

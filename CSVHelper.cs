@@ -15,12 +15,13 @@ namespace OR_Results
         //private string FILENAME_SUFFIX = @".csv";
         
         public IEnumerable<T> ReadData(string filename, T t, string delimiter=",", bool hasHeaderRecord = false)
-        {           
+        {
             using (var reader = new StreamReader(filename))
             using (var csv = new CsvReader(reader))
             {
                 csv.Configuration.Delimiter = delimiter;
                 csv.Configuration.HasHeaderRecord = hasHeaderRecord;
+                csv.Configuration.MissingFieldFound = null;
                 return csv.GetRecords<T>().ToList();
             }
         }
