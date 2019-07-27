@@ -17,6 +17,7 @@ namespace OR_Results
         public static readonly string SEMICOLON = ";";
         public static readonly char COLON = ':';
         public static readonly char HYPHEN = '-';
+        public static readonly string NULL_RECORD = "-:-:--:--:--";
         public static readonly string CSV_FILE_TYPE = ".csv";
         public static readonly string START_PUNCH = "S";
         public static readonly string FINISH_PUNCH = "F";

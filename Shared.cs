@@ -36,6 +36,19 @@ namespace OR_Results
             return Program.competitors.FirstOrDefault(c => c.SI == SI).ClassId;
         }
 
+        public static string GetCourseIdBySI(int SI)
+        {
+            return Program.competitors.FirstOrDefault(c => c.SI == SI).CourseId;
+        }
+
+        public static Course GetCourseBySI(int SI)
+        {
+            var courseId = Program.competitors.FirstOrDefault(c => c.SI == SI).CourseId;
+            if(courseId == null) { return null;  }
+
+            return Program.courses.FirstOrDefault(c => c.CourseId == courseId);
+        }
+
         public static bool ResultsFileExists()
         {
             string filename = new Settings().FullPath + "results.csv";
@@ -46,6 +59,39 @@ namespace OR_Results
         public static string GetName(int SI)
         {
             return Program.competitors.FirstOrDefault(c => c.SI == SI).Name;
+        }
+
+        public static TimeSpan GetTimeFromMilliseconds(long input)
+        {
+            int h = 0;
+            int m = 0;
+            int s = 0;
+
+            int seconds = (int)input / 1000;
+
+            h = seconds / 3600;
+            var remainder = seconds % 3600;
+
+            if (remainder != 0)
+            {
+                m = remainder / 60;
+                s = remainder % 60;
+            }
+            return new TimeSpan(h, m, s);
+
+        } 
+
+        public static int NumberOfCompetitorsRemaining(List<CompetitorResultSummary> competitorResultSummaries)
+        {
+            var numberStarted = competitorResultSummaries.Select(c => c.Status == (int)Status.Started).Count();
+            var total = competitorResultSummaries.Count();
+
+            return total - numberStarted;
+        }
+
+        public static string GetCourseTypeByCourse(string courseId)
+        {
+            return Program.courses.SingleOrDefault(c => c.CourseId == courseId).CourseType;
         }
     }
 }

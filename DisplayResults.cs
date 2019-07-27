@@ -15,6 +15,9 @@ namespace OR_Results
         private Settings _settings;
 
         string score = string.Empty;
+        string netscore = string.Empty;
+        int iNetScore = 0;
+
         int courseCount = 0;
         //int classCount = 0;
         string time = string.Empty;
@@ -34,7 +37,7 @@ namespace OR_Results
         {
             html.Append("<html>");
             html.Append("<head>");
-            html.Append("<meta http-equiv='refresh' content='5' />");
+            //html.Append("<meta http-equiv='refresh' content='5' />");
             html.Append("<Link rel='stylesheet' href='css/bootstrap.min.css'>");
             html.Append("<Link rel='stylesheet' href='css/main.css'>");
 
@@ -56,8 +59,11 @@ namespace OR_Results
             html.Append("</div>");
             html.Append("<div class='col-sm'>");
             html.Append("<h3>");
-            html.Append("Number of competitors: ");
+            html.Append("Competitors: ");
             html.Append(Program.CompetitorCourseSummaries.Count.ToString());
+            html.Append(" ");
+            html.Append("Remaining: ");
+            html.Append(Shared.NumberOfCompetitorsRemaining(Program.CompetitorCourseSummaries));
             html.Append("</h3>");
             html.Append("</div>");
             html.Append("</div>");
@@ -134,16 +140,23 @@ namespace OR_Results
                     html.Append(course.course);
                 html.Append("</th>");
 
-                if (course.course != Constants.COURSE_TYPE_SCORE)
+                if (Shared.GetCourseTypeByCourse(course.course) != Constants.COURSE_TYPE_SCORE)
                     html.Append("<th scope='col'>Class #</th>");
                 html.Append("<th scope='col'>Status</th>");
                 html.Append("<th scope='col'>Name</th>");
                 html.Append("<th scope='col'>Time</th>");
 
-                if (course.course == Constants.COURSE_TYPE_SCORE)
+                if (Shared.GetCourseTypeByCourse( course.course) == Constants.COURSE_TYPE_SCORE)
+                {
+                    html.Append("<th scope='col'>Net Score</th>");
                     html.Append("<th scope='col'>Score</th>");
+                    html.Append("<th scope='col'>Penalty</th>");
+                }
                 else
+                {
                     html.Append("<th scope='col'></th>");
+                    html.Append("<th scope='col'></th>");
+                }
 
                 html.Append("</tr>");
                 html.Append("</thead>");
@@ -181,7 +194,7 @@ namespace OR_Results
                     html.Append(courseCount.ToString());
                     html.Append("</th>");
 
-                    if (course.course != Constants.COURSE_TYPE_SCORE)
+                    if (Shared.GetCourseTypeByCourse(course.course) != Constants.COURSE_TYPE_SCORE)
                     {
                         html.Append("<td class='class-count'>");
                         if (Shared.GetGenderFromClass(Program.GetCompetitorClass(course.Items[i - 1])) == Constants.CLASS_TYPE_MEN) 
@@ -218,14 +231,24 @@ namespace OR_Results
                     html.Append("<td class='elapsed-time'>");
 
                     if ((elapsedTime == TimeSpan.MaxValue) ||
-                       (elapsedTime == TimeSpan.Zero))
+                       (elapsedTime == TimeSpan.Zero) ||
+                       (course.Items[i - 1].Status != (int)Status.Finished))
                         html.Append(string.Empty);
                     else
                         html.Append(elapsedTime.ToString());
 
                     html.Append("</td>");
                     html.Append("<td>");
+
+                    iNetScore = (course.Items[i - 1].Score - course.Items[i - 1].Penalty);
+
+                    html.Append(netscore = (iNetScore == 0) ? string.Empty : iNetScore.ToString());
+                    html.Append("</td>");
+                    html.Append("<td>");
                     html.Append(score = (course.Items[i - 1].Score == 0) ? string.Empty : course.Items[i - 1].Score.ToString());
+                    html.Append("</td>");
+                    html.Append("<td>");
+                    html.Append(score = (course.Items[i - 1].Penalty == 0) ? string.Empty : course.Items[i - 1].Penalty.ToString());
                     html.Append("</td>");
                     html.Append("</tr>");
                     prevCourse = course.course;
