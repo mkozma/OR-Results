@@ -24,9 +24,20 @@ namespace OR_Results
 
         static void Main(string[] args)
         {
-            Initialise();
-            EventDayMontitoring();
-            SetFileWatcher();
+            if (Initialise())
+            {
+                EventDayMontitoring();
+                SetFileWatcher();
+            }
+            else
+                Message();
+        }
+
+        private static void Message()
+        {
+            //throw new NotImplementedException();
+            Console.WriteLine("Unable to continue as setup files are not complete.");
+            Console.ReadLine();
         }
 
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
@@ -57,21 +68,39 @@ namespace OR_Results
             EventDayMontitoring();
         }
 
-        private static void Initialise()
+        private static bool Initialise()
         {
             Settings = new Settings();
-            ReadSetupFiles();
+            return  ReadSetupFiles();
         }
 
-        private static void ReadSetupFiles()
+        private static bool ReadSetupFiles()
         {
+            var validSetupFiles = true;
+
+            var competitionFilenameAndPath = Settings.FullPath + Constants.COMPETITION_FILE;
+            validSetupFiles = (Shared.IsFileExists(competitionFilenameAndPath));
+            if (!validSetupFiles) return false;
             competition = new CSVHelper<Competition>().ReadData(Settings.FullPath + Constants.COMPETITION_FILE, new Competition(), ";").ToList();
 
             Settings.ZeroTime = Shared.GetTimeFromMilliseconds( competition[0].ZeroTime);
+            var controlsFilenameAndPath = Settings.FullPath + Constants.CONTROLS_FILE;
+            validSetupFiles = (Shared.IsFileExists(controlsFilenameAndPath));
+            if (!validSetupFiles) return false;
             controls = new CSVHelper<Control>().ReadData(Settings.FullPath + Constants.CONTROLS_FILE, new Control()).ToList();
+
+            var coursesFilenameAndPath = Settings.FullPath + Constants.COURSES_FILE;
+            validSetupFiles = (Shared.IsFileExists(controlsFilenameAndPath));
+            if (!validSetupFiles) return false;
             courses = new CSVHelper<Course>().ReadData(Settings.FullPath + Constants.COURSES_FILE, new Course()).ToList();
 
+            var coursesVariantsFilenameAndPath = Settings.FullPath + Constants.COURSE_VARIANTS_FILE;
+            validSetupFiles = (Shared.IsFileExists(coursesVariantsFilenameAndPath));
+            if (!validSetupFiles) return false;
             courseVariants = new CSVHelper<CourseVariant>().ReadData(Settings.FullPath + Constants.COURSE_VARIANTS_FILE, new CourseVariant()).ToList();
+
+            return validSetupFiles;
+
         }
 
         private static void EventDayMontitoring()

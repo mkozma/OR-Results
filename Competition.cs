@@ -28,9 +28,9 @@ namespace OR_Results
         public string Field18 { get; set; }
         public string Field19 { get; set; }
         public string Field20 { get; set; }
-        public string Field21 { get; set; }
+        public string SubHeading { get; set; }
         public string Field22 { get; set; }
-        public string Field23 { get; set; }
+        public string ComPort { get; set; }
         public string Field24 { get; set; }
         public string Field25 { get; set; }
         public string Field26 { get; set; }

@@ -14,7 +14,7 @@ namespace OR_Results
         public string Name { get; set; }
         public string Club { get; set; }
         public string CourseId { get; set; }
-        public bool Field1 { get; set; }
+        public bool Rented { get; set; }
         public string ClassId { get; set; }
         public int Field2 { get; set; }
         public int Field3 { get; set; }
@@ -26,7 +26,7 @@ namespace OR_Results
         public int Field9 { get; set; }
         public int Field10 { get; set; }
         public string Field11 { get; set; }
-        public int Field12 { get; set; }
+        //public int Field12 { get; set; }
         //public bool Field13 { get; set; }
     }
 }

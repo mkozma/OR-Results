@@ -9,10 +9,10 @@ namespace OR_Results
     public class Control: CSVHelper<Control>
     {
         public string Name { get; set; }
-        public int Field1 { get; set; }
-        public int Field2 { get; set; }
+        public int XCoordinate { get; set; }
+        public int YCoordinate { get; set; }
         public int Score { get; set; }
-        public string Field3 { get; set; }
-        public bool Field4 { get; set; }
+        public string Display { get; set; }
+        public string Ignore { get; set; }
     }
 }
