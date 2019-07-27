@@ -15,6 +15,9 @@ namespace OR_Results
         private Settings _settings;
 
         string score = string.Empty;
+        string netscore = string.Empty;
+        int iNetScore = 0;
+
         int courseCount = 0;
         //int classCount = 0;
         string time = string.Empty;
@@ -145,6 +148,7 @@ namespace OR_Results
 
                 if (Shared.GetCourseTypeByCourse( course.course) == Constants.COURSE_TYPE_SCORE)
                 {
+                    html.Append("<th scope='col'>Net Score</th>");
                     html.Append("<th scope='col'>Score</th>");
                     html.Append("<th scope='col'>Penalty</th>");
                 }
@@ -233,6 +237,12 @@ namespace OR_Results
                     else
                         html.Append(elapsedTime.ToString());
 
+                    html.Append("</td>");
+                    html.Append("<td>");
+
+                    iNetScore = (course.Items[i - 1].Score - course.Items[i - 1].Penalty);
+
+                    html.Append(netscore = (iNetScore == 0) ? string.Empty : iNetScore.ToString());
                     html.Append("</td>");
                     html.Append("<td>");
                     html.Append(score = (course.Items[i - 1].Score == 0) ? string.Empty : course.Items[i - 1].Score.ToString());
