@@ -98,5 +98,26 @@ namespace OR_Results
         {
             return File.Exists(filename);
         }
+
+        public static string GetClub(int sI)
+        {
+            var club = Program.competitors.SingleOrDefault(c => c.SI == sI).Club;
+            var hasSpace = club.Contains(" ");
+            return (hasSpace) ? club.Replace(" ", "%20") : club;
+        }
+
+        public static bool isImageFileExists(string filename)
+        {
+            if (File.Exists(@"C:/Inetpub/wwwroot/Images/"+filename + ".jpg"))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        //public static string GetClubImage(int SI)
+        //{
+            
+        //}
     }
 }

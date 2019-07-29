@@ -141,8 +141,9 @@ namespace OR_Results
                 html.Append("</th>");
 
                 if (Shared.GetCourseTypeByCourse(course.course) != Constants.COURSE_TYPE_SCORE)
-                    html.Append("<th scope='col'>Class #</th>");
+                    html.Append("<th scope='col'>Cl #</th>");
                 html.Append("<th scope='col'>Status</th>");
+                //html.Append("<th scope='col'>Cl</th>");
                 html.Append("<th scope='col'>Name</th>");
                 html.Append("<th scope='col'>Time</th>");
 
@@ -154,6 +155,7 @@ namespace OR_Results
                 }
                 else
                 {
+                    html.Append("<th scope='col'></th>");
                     html.Append("<th scope='col'></th>");
                     html.Append("<th scope='col'></th>");
                 }
@@ -170,7 +172,7 @@ namespace OR_Results
                         mensCount = 0;
                         womensCount = 0;
                     }
-                    else if ((htmlHelper != null) && (htmlHelper.IsNewTable == true))
+                    else if ((htmlHelper != null) && (htmlHelper.IsNewTable == false))
                     {
                         courseCount = htmlHelper.CourseCount;
                         mensCount = htmlHelper.ClassCountMen;
@@ -216,17 +218,22 @@ namespace OR_Results
                         html.Append("</td>");
                     }
 
-                    html.Append("<td class='class-count'>");
+                    html.Append("<td class='status'>");
                     html.Append("<img src='Images/");
                     html.Append(Shared.GetEnumValue(course.Items[i - 1].Status));
                     html.Append(hyphen + imageSize);
                     html.Append(".png' class='img-responsive'>");
                     html.Append("</td>");
                     html.Append("<td>");
-
+                    html.Append("<img src='Images/");
+                    html.Append(Shared.GetClub(course.Items[i - 1].SI));
+                    html.Append(hyphen + imageSize);
+                    html.Append(".jpg' class='img-responsive'>");
+                    html.Append(" ");
+                    //html.Append("</td>");
+                    //html.Append("<td>");
                     html.Append(Program.GetName(course.Items[i - 1].SI));
                     html.Append("</td>");
-
                     var elapsedTime = course.Items[i - 1].ElapsedTime;
                     html.Append("<td class='elapsed-time'>");
 
