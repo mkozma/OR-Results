@@ -24,6 +24,11 @@ namespace OR_Results
         public static readonly string COURSE_TYPE_SCORE = "Score";
         public static readonly string CLASS_TYPE_MEN= "men";
         public static readonly string CLASS_TYPE_WOMEN= "women";
+        public static readonly char FORWARD_SLASH = '/';
+        public static readonly string IMAGE_FILE_EXTENSION = ".jpg";
+        public static readonly string IMAGE_SIZE = "-15";
+
+        
 
 
     }

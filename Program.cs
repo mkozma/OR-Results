@@ -26,7 +26,8 @@ namespace OR_Results
         {
             if (Initialise())
             {
-                EventDayMontitoring();
+                if (!EventDayMontitoring())
+                    return;
                 SetFileWatcher();
             }
             else
@@ -71,7 +72,9 @@ namespace OR_Results
         private static bool Initialise()
         {
             Settings = new Settings();
-            return  ReadSetupFiles();
+
+          
+            return ReadSetupFiles();
         }
 
         private static bool ReadSetupFiles()
@@ -90,7 +93,7 @@ namespace OR_Results
             controls = new CSVHelper<Control>().ReadData(Settings.FullPath + Constants.CONTROLS_FILE, new Control()).ToList();
 
             var coursesFilenameAndPath = Settings.FullPath + Constants.COURSES_FILE;
-            validSetupFiles = (Shared.IsFileExists(controlsFilenameAndPath));
+            validSetupFiles = (Shared.IsFileExists(coursesFilenameAndPath));
             if (!validSetupFiles) return false;
             courses = new CSVHelper<Course>().ReadData(Settings.FullPath + Constants.COURSES_FILE, new Course()).ToList();
 
@@ -103,9 +106,25 @@ namespace OR_Results
 
         }
 
-        private static void EventDayMontitoring()
+        private static bool Validate()
         {
-            BuildInitialiseFile();
+            //check all competitor courses match courses
+            foreach(var competitor in competitors)
+            {
+                if (!Shared.CompetitorCourseExists(competitor.CourseId))
+                    return false;
+            }
+            return true;
+        }
+
+        private static bool EventDayMontitoring()
+        {
+            if (!BuildInitialiseFile())
+            {
+                Console.WriteLine("Error - file not found or competitor course not match courses in courses file");
+                Console.ReadLine();
+                return false;
+            }
 
             if (Shared.ResultsFileExists())
             {
@@ -116,13 +135,19 @@ namespace OR_Results
             }
 
             PerformResults();
+
+            return true;
         }
 
-        private static void BuildInitialiseFile()
+        private static bool BuildInitialiseFile()
         {
+            var competitorsFilenameAndPath = Settings.FullPath + Constants.COMPETITORS_FILE;
+            if (!Shared.IsFileExists(competitorsFilenameAndPath))
+                return false;
+
             competitors = new CSVHelper<Competitor>().ReadData(Settings.FullPath + Constants.COMPETITORS_FILE, new Competitor(), Constants.SEMICOLON).ToList();
-            if (competitors == null)
-                return;
+            if ((competitors == null) || (!Validate()))
+                return false;
 
             CompetitorCourseSummaries = new List<CompetitorResultSummary>();
 
@@ -138,6 +163,8 @@ namespace OR_Results
                 };
                 CompetitorCourseSummaries.Add(competitorResultSummary);
             }
+
+            return true;
         }
 
         private static void ManipulateData()
