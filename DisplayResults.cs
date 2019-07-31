@@ -37,7 +37,7 @@ namespace OR_Results
         {
             html.Append("<html>");
             html.Append("<head>");
-            //html.Append("<meta http-equiv='refresh' content='5' />");
+            html.Append("<meta http-equiv='refresh' content='5' />");
             html.Append("<Link rel='stylesheet' href='css/bootstrap.min.css'>");
             html.Append("<Link rel='stylesheet' href='css/main.css'>");
 
@@ -121,6 +121,9 @@ namespace OR_Results
 
             var prevCourse = string.Empty;
             var prevClass = string.Empty;
+
+            TimeSpan? courseLeaderTime = TimeSpan.Zero;
+
             html.Append("<div class='col-lg'>");
 
             foreach (var course in data)
@@ -143,9 +146,9 @@ namespace OR_Results
                 if (Shared.GetCourseTypeByCourse(course.course) != Constants.COURSE_TYPE_SCORE)
                     html.Append("<th scope='col'>Cl #</th>");
                 html.Append("<th scope='col'>Status</th>");
-                //html.Append("<th scope='col'>Cl</th>");
                 html.Append("<th scope='col'>Name</th>");
                 html.Append("<th scope='col'>Time</th>");
+
 
                 if (Shared.GetCourseTypeByCourse( course.course) == Constants.COURSE_TYPE_SCORE)
                 {
@@ -155,9 +158,7 @@ namespace OR_Results
                 }
                 else
                 {
-                    html.Append("<th scope='col'></th>");
-                    html.Append("<th scope='col'></th>");
-                    html.Append("<th scope='col'></th>");
+                    html.Append("<th scope='col'>Diff</th>");
                 }
 
                 html.Append("</tr>");
@@ -166,11 +167,13 @@ namespace OR_Results
 
                 for (int i = 1; i <= course.Items.Count; i++)
                 {
-                    if (((htmlHelper == null) && (i == 1)))
+                    if ((((htmlHelper == null) && (i == 1))) ||
+                         ((htmlHelper != null) && (i == 1)))
                     {
                         courseCount = 0;
                         mensCount = 0;
                         womensCount = 0;
+                        courseLeaderTime = course.Items[i - 1].ElapsedTime;
                     }
                     else if ((htmlHelper != null) && (htmlHelper.IsNewTable == false))
                     {
@@ -178,11 +181,6 @@ namespace OR_Results
                         mensCount = htmlHelper.ClassCountMen;
                         womensCount = htmlHelper.ClassCountWomen;
                         htmlHelper.IsNewTable = false;
-                    } else if ((htmlHelper != null) && (i==1))
-                    {
-                        courseCount = 0;
-                        mensCount = 0;
-                        womensCount = 0;
                     }
 
                     courseCount++;
@@ -226,37 +224,38 @@ namespace OR_Results
                     html.Append("</td>");
                     html.Append("<td>");
                     html.Append("<img src='Images/");
-                    html.Append(Shared.GetClub(course.Items[i - 1].SI));
-                    html.Append(hyphen + imageSize);
-                    html.Append(".jpg' class='img-responsive'>");
+                    html.Append(Shared.GetClubImage(course.Items[i - 1].SI));
+
+                    html.Append("' class='img-responsive'>");
                     html.Append(" ");
-                    //html.Append("</td>");
-                    //html.Append("<td>");
                     html.Append(Program.GetName(course.Items[i - 1].SI));
                     html.Append("</td>");
                     var elapsedTime = course.Items[i - 1].ElapsedTime;
                     html.Append("<td class='elapsed-time'>");
 
-                    if ((elapsedTime == TimeSpan.MaxValue) ||
-                       (elapsedTime == TimeSpan.Zero) ||
-                       (course.Items[i - 1].Status != (int)Status.Finished))
-                        html.Append(string.Empty);
+                    html.Append(Shared.GetElapsedTime(course.Items[i - 1].SI));
+
+                    if (Shared.GetCourseTypeByCourse(course.course) != Constants.COURSE_TYPE_SCORE)
+                    {
+                        html.Append("</td>");
+                        html.Append("<td>");
+                        html.Append(Shared.GetTimeDiffFromLeader(courseLeaderTime, course.Items[i - 1].ElapsedTime));
+                        html.Append("</td>");
+                    }
                     else
-                        html.Append(elapsedTime.ToString());
+                    {
+                        html.Append("<td>");
+                        iNetScore = (course.Items[i - 1].Score - course.Items[i - 1].Penalty);
+                        html.Append(netscore = (iNetScore == 0) ? string.Empty : iNetScore.ToString());
+                        html.Append("</td>");
+                        html.Append("<td>");
+                        html.Append(score = (course.Items[i - 1].Score == 0) ? string.Empty : course.Items[i - 1].Score.ToString());
+                        html.Append("</td>");
+                        html.Append("<td>");
+                        html.Append(score = (course.Items[i - 1].Penalty == 0) ? string.Empty : course.Items[i - 1].Penalty.ToString());
+                        html.Append("</td>");
+                    }
 
-                    html.Append("</td>");
-                    html.Append("<td>");
-
-                    iNetScore = (course.Items[i - 1].Score - course.Items[i - 1].Penalty);
-
-                    html.Append(netscore = (iNetScore == 0) ? string.Empty : iNetScore.ToString());
-                    html.Append("</td>");
-                    html.Append("<td>");
-                    html.Append(score = (course.Items[i - 1].Score == 0) ? string.Empty : course.Items[i - 1].Score.ToString());
-                    html.Append("</td>");
-                    html.Append("<td>");
-                    html.Append(score = (course.Items[i - 1].Penalty == 0) ? string.Empty : course.Items[i - 1].Penalty.ToString());
-                    html.Append("</td>");
                     html.Append("</tr>");
                     prevCourse = course.course;
                     prevClass = Program.GetCompetitorClass(course.Items[i - 1]);

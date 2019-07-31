@@ -61,6 +61,13 @@ namespace OR_Results
             return Program.competitors.FirstOrDefault(c => c.SI == SI).Name;
         }
 
+        public static bool CompetitorCourseExists(string competitorCourseId)
+        {
+            var x = Program.courses.Any(c => c.CourseId == competitorCourseId);
+            return x;
+
+        }
+
         public static TimeSpan GetTimeFromMilliseconds(long input)
         {
             int h = 0;
@@ -115,9 +122,72 @@ namespace OR_Results
             return false;
         }
 
-        //public static string GetClubImage(int SI)
-        //{
-            
-        //}
+        public static string GetTimeDiffFromLeader(TimeSpan? leaderTime, TimeSpan? thisTime)
+        {
+            var sTimeDiff = string.Empty;
+
+            var x = thisTime - leaderTime;
+
+            if (x != null)
+            {
+                sTimeDiff = ToShortForm((TimeSpan)x);
+            }
+            return sTimeDiff;
+        }
+
+        public static string ToShortForm(TimeSpan t)
+        {
+            string shortForm = "";
+            if (t.Hours > 0)
+            {
+                shortForm += string.Format("{0}h", t.Hours.ToString());
+            }
+            if (t.Minutes > 0)
+            {
+                shortForm += string.Format("{0}m", t.Minutes.ToString());
+            }
+            if (t.Seconds > 0)
+            {
+                shortForm += string.Format("{0}s", t.Seconds.ToString());
+            }
+            return shortForm;
+        }
+
+        public static string GetClubImage(int SI)
+        {
+            string clubImagePath = string.Empty;
+
+            var club = Program.competitors.SingleOrDefault(c => c.SI == SI).Club;
+
+
+            if (!isImageFileExists(club + Constants.IMAGE_SIZE ))
+            {
+
+                return clubImagePath = String.Format("{0}",  "OV" + Constants.IMAGE_SIZE + Constants.IMAGE_FILE_EXTENSION);
+            }
+
+            if (club == "%20")
+                return "spacer";
+
+            var hasSpace = club.Contains(" ");
+            club = (hasSpace) ? club.Replace(" ", "%20") : club;
+            return clubImagePath = String.Format("{0}",  club + Constants.IMAGE_SIZE + Constants.IMAGE_FILE_EXTENSION);
+        }
+        public static string GetElapsedTime(int SI)
+        {
+            //var elapsedTime = course.Items[i - 1].ElapsedTime;
+            var elapsedTime = Program.CompetitorCourseSummaries.FirstOrDefault(c => c.SI == SI).ElapsedTime;
+            var status = Program.CompetitorCourseSummaries.FirstOrDefault(c => c.SI == SI).Status;
+
+            if ((elapsedTime == TimeSpan.MaxValue) ||
+                (elapsedTime == TimeSpan.Zero) ||
+                (status != (int)Status.Finished) ||
+                (elapsedTime < TimeSpan.Zero)) 
+                return string.Empty;
+            else
+                return elapsedTime.ToString();
+
+
+        }
     }
 }
