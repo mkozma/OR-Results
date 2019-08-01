@@ -167,20 +167,26 @@ namespace OR_Results
 
                 for (int i = 1; i <= course.Items.Count; i++)
                 {
-                    if ((((htmlHelper == null) && (i == 1))) ||
-                         ((htmlHelper != null) && (i == 1)))
+                    if (
+                        ((htmlHelper == null) && (i == 1))
+                    )
                     {
                         courseCount = 0;
                         mensCount = 0;
                         womensCount = 0;
-                        courseLeaderTime = course.Items[i - 1].ElapsedTime;
                     }
-                    else if ((htmlHelper != null) && (htmlHelper.IsNewTable == false))
+                    else if ((htmlHelper != null) && (htmlHelper.IsNewTable == true))
                     {
                         courseCount = htmlHelper.CourseCount;
                         mensCount = htmlHelper.ClassCountMen;
                         womensCount = htmlHelper.ClassCountWomen;
                         htmlHelper.IsNewTable = false;
+                    }
+                    else if ((htmlHelper != null) && (i == 1))
+                    {
+                        courseCount = 0;
+                        mensCount = 0;
+                        womensCount = 0;
                     }
 
                     courseCount++;
