@@ -238,8 +238,11 @@ namespace OR_Results
 
         private static void SortResults()
         {
+            int[] customStatusOrder = new int[] { 0, 4, 1, 2, 3 };
+
             CompetitorCourseSummaries = CompetitorCourseSummaries
                 .OrderBy(c=>c.CourseId)
+                .ThenBy(c=>customStatusOrder)
                 .ThenBy(c=>c.Status)
                 .ThenByDescending(c => c.Score)
                 .ThenBy(c => c.ElapsedTime)
