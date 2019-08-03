@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -187,7 +188,11 @@ namespace OR_Results
             else
                 return elapsedTime.ToString();
 
+        }
 
+        public static string GetVersion()
+        {
+            return "Version: "+ Assembly.GetExecutingAssembly().GetName().Version.ToString();
         }
     }
 }
