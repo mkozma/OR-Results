@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security.Permissions;
 
 namespace OR_Results
@@ -22,8 +23,10 @@ namespace OR_Results
 
         public static Settings Settings { get; set; }
 
+        
         static void Main(string[] args)
         {
+               
             if (Initialise())
             {
                 if (!EventDayMontitoring())
@@ -38,6 +41,7 @@ namespace OR_Results
         {
             //throw new NotImplementedException();
             Console.WriteLine("Unable to continue as setup files are not complete.");
+            
             Console.ReadLine();
         }
 
@@ -72,8 +76,9 @@ namespace OR_Results
         private static bool Initialise()
         {
             Settings = new Settings();
+            Console.WriteLine(Shared.GetVersion());
 
-          
+
             return ReadSetupFiles();
         }
 
@@ -83,7 +88,12 @@ namespace OR_Results
 
             var competitionFilenameAndPath = Settings.FullPath + Constants.COMPETITION_FILE;
             validSetupFiles = (Shared.IsFileExists(competitionFilenameAndPath));
-            if (!validSetupFiles) return false;
+            if (!validSetupFiles)
+            {
+                Console.WriteLine("Error - Invalid setup file");
+                return false;
+            }
+
             competition = new CSVHelper<Competition>().ReadData(Settings.FullPath + Constants.COMPETITION_FILE, new Competition(), ";").ToList();
 
             Settings.ZeroTime = Shared.GetTimeFromMilliseconds( competition[0].ZeroTime);
@@ -574,7 +584,7 @@ namespace OR_Results
 
             return new TimeSpan(Convert.ToInt16(hours), Convert.ToInt16(minutes), Convert.ToInt16(seconds));
         }
-        
+
     }
 
 

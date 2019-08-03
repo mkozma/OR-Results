@@ -107,6 +107,8 @@
     <Compile Include="CSVHelper.cs" />
     <Compile Include="DisplayResults.cs" />
     <Compile Include="HTMLHelper.cs" />
+    <Compile Include="ILog.cs" />
+    <Compile Include="Log.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -125,6 +127,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="js\bootstrap.bundle.js.map" />
+    <None Include="js\bootstrap.bundle.min.js.map" />
+    <None Include="js\bootstrap.js.map" />
+    <None Include="js\bootstrap.min.js.map" />
     <None Include="OR-Results_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
@@ -135,8 +141,75 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="css\main.css" />
+    <Content Include="Images\-15.jpg" />
+    <Content Include="Images\ADRF.png" />
+    <Content Include="Images\AF-15.jpg" />
+    <Content Include="Images\Albury Wodonga Orienteering Club.png" />
+    <Content Include="Images\Albury-Wodonga Orienteering Club-15.jpg" />
+    <Content Include="Images\AR-15.jpg" />
+    <Content Include="Images\AWV-15.jpg" />
+    <Content Include="Images\Bayside Kangaroos Orienteers-15.jpg" />
+    <Content Include="Images\Bayside Kangaroos Orienteers-15.png" />
+    <Content Include="Images\Bayside Kangaroos Orienteers-25.jpg" />
+    <Content Include="Images\BG-15.jpg" />
+    <Content Include="Images\BG-2-150x150.png" />
+    <Content Include="Images\BGV-15.jpg" />
+    <Content Include="Images\Big Foot Orienteers-15.jpg" />
+    <Content Include="Images\Big Foot Orienteers-25.jpg" />
+    <Content Include="Images\Big Foot Orienteers.png" />
+    <Content Include="Images\BK logo colour.jpg" />
+    <Content Include="Images\BK-15.jpg" />
+    <Content Include="Images\BK-logo.jpg" />
+    <Content Include="Images\BKV-15.jpg" />
+    <Content Include="Images\CH-15.jpg" />
+    <Content Include="Images\CH.png" />
+    <Content Include="Images\CHV-15.jpg" />
+    <Content Include="Images\Dandenong Ranges Orienteering Club.jpg" />
+    <Content Include="Images\Dandenong Ranges Orienteering Club.png" />
+    <Content Include="Images\DidNotStart-15.png" />
+    <Content Include="Images\DidNotStart-25.png" />
+    <Content Include="Images\DidNotStart-50.png" />
+    <Content Include="Images\DR-15.jpg" />
+    <Content Include="Images\ENQ-15.jpg" />
+    <Content Include="Images\Eureka Orienteers-15.jpg" />
+    <Content Include="Images\Eureka Orienteers.jpg" />
+    <Content Include="Images\EVT-15.jpg" />
+    <Content Include="Images\Finished-15.png" />
+    <Content Include="Images\Finished-25.png" />
     <Content Include="Images\Finished-50.png" />
+    <Content Include="Images\Melbourne Forest Racers-15.jpg" />
+    <Content Include="Images\Melbourne Forest Racers.png" />
+    <Content Include="Images\MFR-15.jpg" />
+    <Content Include="Images\Mispunch-15.png" />
+    <Content Include="Images\Mispunch-25.png" />
+    <Content Include="Images\Mispunch-50.png" />
+    <Content Include="Images\NE-15.jpg" />
+    <Content Include="Images\Newcastle Orienteering Club-15.jpg" />
+    <Content Include="Images\Newcastle Orienteering Club.jpg" />
+    <Content Include="Images\Nillumbik Emus Orienteering Club-15.jpg" />
+    <Content Include="Images\Nillumbik-Emus-1-150x150.png" />
+    <Content Include="Images\No Club membership-15.jpg" />
+    <Content Include="Images\None-15.jpg" />
+    <Content Include="Images\NotStarted-15.png" />
+    <Content Include="Images\NotStarted-25.png" />
+    <Content Include="Images\NotStarted-50.png" />
+    <Content Include="Images\OV-15.jpg" />
+    <Content Include="Images\spacer-15.jpg" />
     <Content Include="Images\Start.png" />
+    <Content Include="Images\TK-1-150x150.png" />
+    <Content Include="Images\Tuckonie Orienteering Club.jpg" />
+    <Content Include="Images\VIC-15.jpg" />
+    <Content Include="Images\Wagga and Riverina Occasional Orienteers-15.jpg" />
+    <Content Include="Images\Wagga and Riverina Occasional Orienteers-15.png" />
+    <Content Include="Images\Wagga and Riverina Occasional Orienteers.png" />
+    <Content Include="Images\Yarra Valley Orienteering Club-15.jpg" />
+    <Content Include="Images\Yarra Valley Orienteering Club.jpg" />
+    <Content Include="Images\YV-15.jpg" />
+    <Content Include="js\bootstrap.bundle.js" />
+    <Content Include="js\bootstrap.bundle.min.js" />
+    <Content Include="js\bootstrap.js" />
+    <Content Include="js\bootstrap.min.js" />
+    <Content Include="js\jquery.min.js" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">
@@ -156,5 +229,6 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
