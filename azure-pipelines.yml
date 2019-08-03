@@ -32,7 +32,7 @@ steps:
     
 - task: CopyFiles@2
   inputs:
-    SourceFolder: '\css'
+    SourceFolder: 'css'
     Contents: '**'
     TargetFolder: 'C:\inetpub\wwwroot\css'
     CleanTargetFolder: true
