@@ -91,10 +91,14 @@ namespace OR_Results
 
         public static int NumberOfCompetitorsRemaining(List<CompetitorResultSummary> competitorResultSummaries)
         {
-            var numberStarted = competitorResultSummaries.Select(c => c.Status == (int)Status.Started).Count();
+            var numberStarted = competitorResultSummaries.Where(c => c.Status == (int)Status.Started).Count();
+            var numberDidNotStart = competitorResultSummaries.Where(c => c.Status == (int)Status.DidNotStart).Count();
+            var numberFinished = competitorResultSummaries.Where(c => c.Status == (int)Status.Finished).Count();
+            var numberMispunch = competitorResultSummaries.Where(c => c.Status == (int)Status.Mispunch).Count();
+            var numberDidNotFinish = competitorResultSummaries.Where(c => c.Status == (int)Status.DidNotFinish).Count();
             var total = competitorResultSummaries.Count();
 
-            return total - numberStarted;
+            return total - numberFinished - numberDidNotFinish - numberMispunch;
         }
 
         public static string GetCourseTypeByCourse(string courseId)
