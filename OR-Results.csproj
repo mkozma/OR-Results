@@ -127,6 +127,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="js\bootstrap.bundle.js.map" />
+    <None Include="js\bootstrap.bundle.min.js.map" />
+    <None Include="js\bootstrap.js.map" />
+    <None Include="js\bootstrap.min.js.map" />
     <None Include="OR-Results_TemporaryKey.pfx" />
     <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
@@ -201,6 +205,11 @@
     <Content Include="Images\Yarra Valley Orienteering Club-15.jpg" />
     <Content Include="Images\Yarra Valley Orienteering Club.jpg" />
     <Content Include="Images\YV-15.jpg" />
+    <Content Include="js\bootstrap.bundle.js" />
+    <Content Include="js\bootstrap.bundle.min.js" />
+    <Content Include="js\bootstrap.js" />
+    <Content Include="js\bootstrap.min.js" />
+    <Content Include="js\jquery.min.js" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5.2">
@@ -220,5 +229,6 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
