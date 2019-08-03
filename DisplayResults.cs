@@ -37,7 +37,7 @@ namespace OR_Results
         {
             html.Append("<html>");
             html.Append("<head>");
-            //html.Append("<meta http-equiv='refresh' content='5' />");
+            html.Append("<meta http-equiv='refresh' content='5' />");
             html.Append("<Link rel='stylesheet' href='css/bootstrap.min.css'>");
             html.Append("<Link rel='stylesheet' href='css/main.css'>");
 
@@ -150,8 +150,8 @@ namespace OR_Results
                 html.Append("</th>");
 
                 if (Shared.GetCourseTypeByCourse(course.course) != Constants.COURSE_TYPE_SCORE)
-                    html.Append("<th scope='col'>Cl #</th>");
-                html.Append("<th scope='col'>Status</th>");
+                    html.Append("<th scope='col'>#</th>");
+                html.Append("<th scope='col'>St</th>");
                 html.Append("<th scope='col'>Name</th>");
                 html.Append("<th scope='col'>Time</th>");
 
@@ -159,7 +159,7 @@ namespace OR_Results
                 if (Shared.GetCourseTypeByCourse( course.course) == Constants.COURSE_TYPE_SCORE)
                 {
                     html.Append("<th scope='col'>Net Score</th>");
-                    html.Append("<th scope='col'>Score</th>");
+                    //html.Append("<th scope='col'>Score</th>");
                     html.Append("<th scope='col'>Penalty</th>");
                 }
                 else
@@ -247,11 +247,16 @@ namespace OR_Results
 
                     html.Append(Shared.GetElapsedTime(course.Items[i - 1].SI));
 
+                   if(i == 1)
+                    {
+                        courseLeaderTime = elapsedTime;
+                    }
+
                     if (Shared.GetCourseTypeByCourse(course.course) != Constants.COURSE_TYPE_SCORE)
                     {
                         html.Append("</td>");
                         html.Append("<td>");
-                        html.Append(Shared.GetTimeDiffFromLeader(courseLeaderTime, course.Items[i - 1].ElapsedTime));
+                        html.Append(Shared.GetTimeDiffFromLeader(courseLeaderTime, course.Items[i - 1].ElapsedTime,course.Items[i-1].Status, i));
                         html.Append("</td>");
                     }
                     else
@@ -260,9 +265,9 @@ namespace OR_Results
                         iNetScore = (course.Items[i - 1].Score - course.Items[i - 1].Penalty);
                         html.Append(netscore = (iNetScore == 0) ? string.Empty : iNetScore.ToString());
                         html.Append("</td>");
-                        html.Append("<td>");
-                        html.Append(score = (course.Items[i - 1].Score == 0) ? string.Empty : course.Items[i - 1].Score.ToString());
-                        html.Append("</td>");
+                        //html.Append("<td>");
+                        //html.Append(score = (course.Items[i - 1].Score == 0) ? string.Empty : course.Items[i - 1].Score.ToString());
+                        //html.Append("</td>");
                         html.Append("<td>");
                         html.Append(score = (course.Items[i - 1].Penalty == 0) ? string.Empty : course.Items[i - 1].Penalty.ToString());
                         html.Append("</td>");
