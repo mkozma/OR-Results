@@ -160,9 +160,9 @@ namespace OR_Results
 
                 if (Shared.GetCourseTypeByCourse( course.course) == Constants.COURSE_TYPE_SCORE)
                 {
+                    html.Append("<th scope='col'>Penalty</th>");
                     html.Append("<th scope='col'>Net Score</th>");
                     //html.Append("<th scope='col'>Score</th>");
-                    html.Append("<th scope='col'>Penalty</th>");
                 }
                 else
                 {
@@ -240,7 +240,7 @@ namespace OR_Results
                     html.Append("<img src='Images/");
                     html.Append(Shared.GetClubImage(course.Items[i - 1].SI));
 
-                    html.Append("' class='img-responsive'>");
+                    html.Append("' class='img-responsive mx-auto'>");
                     html.Append(" ");
                     html.Append(Program.GetName(course.Items[i - 1].SI));
                     html.Append("</td>");
@@ -264,15 +264,16 @@ namespace OR_Results
                     else
                     {
                         html.Append("<td>");
+                        html.Append(score = (course.Items[i - 1].Penalty == 0) ? string.Empty : course.Items[i - 1].Penalty.ToString());
+                        html.Append("</td>");
+                        html.Append("<td>");
                         iNetScore = (course.Items[i - 1].Score - course.Items[i - 1].Penalty);
                         html.Append(netscore = (iNetScore == 0) ? string.Empty : iNetScore.ToString());
                         html.Append("</td>");
                         //html.Append("<td>");
                         //html.Append(score = (course.Items[i - 1].Score == 0) ? string.Empty : course.Items[i - 1].Score.ToString());
                         //html.Append("</td>");
-                        html.Append("<td>");
-                        html.Append(score = (course.Items[i - 1].Penalty == 0) ? string.Empty : course.Items[i - 1].Penalty.ToString());
-                        html.Append("</td>");
+                       
                     }
 
                     html.Append("</tr>");
