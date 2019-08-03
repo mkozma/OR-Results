@@ -129,8 +129,11 @@ namespace OR_Results
 
         public static string GetTimeDiffFromLeader(TimeSpan? leaderTime, TimeSpan? thisTime, int status, int i)
         {
-            if ((i == 1) || (status == (int)Status.DidNotStart))
-                return string.Empty;
+            if 
+                ((i == 1) || 
+                (status == (int)Status.DidNotStart) || 
+                status == (int)Status.Mispunch)
+                    return string.Empty;
 
             var sTimeDiff = string.Empty;
 
