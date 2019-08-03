@@ -2,6 +2,11 @@
 - task: CopyFiles@2
   inputs:
     SourceFolder: '\css'
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '\Images'
+    Contents: '**'
+    TargetFolder: 'c:\inetpub\wwwroot\Images'
     Contents: '**'
     TargetFolder: 'C:\inetpub\wwwroot\css'
     CleanTargetFolder: true
