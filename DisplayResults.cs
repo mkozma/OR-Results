@@ -247,16 +247,16 @@ namespace OR_Results
 
                     html.Append(Shared.GetElapsedTime(course.Items[i - 1].SI));
 
-                    if (courseLeaderTime == TimeSpan.Zero)
+                   if(i == 1)
                     {
-
+                        courseLeaderTime = elapsedTime;
                     }
 
                     if (Shared.GetCourseTypeByCourse(course.course) != Constants.COURSE_TYPE_SCORE)
                     {
                         html.Append("</td>");
                         html.Append("<td>");
-                        html.Append(Shared.GetTimeDiffFromLeader(courseLeaderTime, course.Items[i - 1].ElapsedTime,course.Items[i-1].Status));
+                        html.Append(Shared.GetTimeDiffFromLeader(courseLeaderTime, course.Items[i - 1].ElapsedTime,course.Items[i-1].Status, i));
                         html.Append("</td>");
                     }
                     else

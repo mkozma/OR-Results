@@ -123,19 +123,19 @@ namespace OR_Results
             return false;
         }
 
-        public static string GetTimeDiffFromLeader(TimeSpan? leaderTime, TimeSpan? thisTime, int status)
+        public static string GetTimeDiffFromLeader(TimeSpan? leaderTime, TimeSpan? thisTime, int status, int i)
         {
+            if ((i == 1) || (status == (int)Status.DidNotStart))
+                return string.Empty;
+
             var sTimeDiff = string.Empty;
 
-            var x = thisTime - leaderTime;
+            var timeDiff = thisTime - leaderTime;
 
-            if (x != null)
+            if (timeDiff != null)
             {
-                sTimeDiff = ToShortForm((TimeSpan)x);
+                sTimeDiff = ToShortForm((TimeSpan)timeDiff);
             }
-
-            if (status == (int)Status.DidNotStart)
-                return string.Empty;
 
             return sTimeDiff;
         }
