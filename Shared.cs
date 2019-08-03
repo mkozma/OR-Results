@@ -123,7 +123,7 @@ namespace OR_Results
             return false;
         }
 
-        public static string GetTimeDiffFromLeader(TimeSpan? leaderTime, TimeSpan? thisTime)
+        public static string GetTimeDiffFromLeader(TimeSpan? leaderTime, TimeSpan? thisTime, int status)
         {
             var sTimeDiff = string.Empty;
 
@@ -133,6 +133,10 @@ namespace OR_Results
             {
                 sTimeDiff = ToShortForm((TimeSpan)x);
             }
+
+            if (status == (int)Status.DidNotStart)
+                return string.Empty;
+
             return sTimeDiff;
         }
 

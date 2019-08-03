@@ -21,7 +21,7 @@ namespace OR_Results
 
         public  string FullPath 
         {
-            get { return dataPath + backSlash + competition + backSlash; }
+            get { return dataPath + competition + backSlash; }
         }
 
         public string DataPath

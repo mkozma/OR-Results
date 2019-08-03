@@ -50,7 +50,7 @@ namespace OR_Results
         {
 
             // Create a new FileSystemWatcher and set its properties.
-            using (watcher = new FileSystemWatcher(Settings.DataPath))
+            using (watcher = new FileSystemWatcher(Settings.FullPath))
             {
                 watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.LastAccess;
 
