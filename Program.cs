@@ -9,6 +9,10 @@ namespace OR_Results
 {
     class Program
     {
+        private static FileSystemWatcher watcher;
+        private static Settings _settings;
+
+        public static List<CompetitorResultSummary> CompetitorCourseSummaries { get; set; }
         public static List<CompetitorResult> results;
         public static List<CoursePunch> coursePunches;
         public static List<Control> controls;
@@ -17,16 +21,8 @@ namespace OR_Results
         public static List<CourseVariant> courseVariants;
         public static List<Competition> competition;
 
-        private static FileSystemWatcher watcher;
-
-        public static List<CompetitorResultSummary> CompetitorCourseSummaries { get; set; }
-
-        public static Settings Settings { get; set; }
-
-        
         static void Main(string[] args)
         {
-               
             if (Initialise())
             {
                 if (!EventDayMontitoring())
@@ -39,7 +35,6 @@ namespace OR_Results
 
         private static void Message()
         {
-            //throw new NotImplementedException();
             Console.WriteLine("Unable to continue as setup files are not complete.");
             
             Console.ReadLine();
@@ -48,9 +43,8 @@ namespace OR_Results
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
         private static void SetFileWatcher()
         {
-
             // Create a new FileSystemWatcher and set its properties.
-            using (watcher = new FileSystemWatcher(Settings.FullPath))
+            using (watcher = new FileSystemWatcher(_settings.FullPath))
             {
                 watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.LastAccess;
 
@@ -75,9 +69,8 @@ namespace OR_Results
 
         private static bool Initialise()
         {
-            Settings = new Settings();
+            _settings = new Settings();
             Console.WriteLine(Shared.GetVersion());
-
 
             return ReadSetupFiles();
         }
@@ -86,7 +79,7 @@ namespace OR_Results
         {
             var validSetupFiles = true;
 
-            var competitionFilenameAndPath = Settings.FullPath + Constants.COMPETITION_FILE;
+            var competitionFilenameAndPath = _settings.FullPath + Constants.COMPETITION_FILE;
             validSetupFiles = (Shared.IsFileExists(competitionFilenameAndPath));
             if (!validSetupFiles)
             {
@@ -94,26 +87,25 @@ namespace OR_Results
                 return false;
             }
 
-            competition = new CSVHelper<Competition>().ReadData(Settings.FullPath + Constants.COMPETITION_FILE, new Competition(), ";").ToList();
+            competition = new CSVHelper<Competition>().ReadData(_settings.FullPath + Constants.COMPETITION_FILE, new Competition(), ";").ToList();
 
-            Settings.ZeroTime = Shared.GetTimeFromMilliseconds( competition[0].ZeroTime);
-            var controlsFilenameAndPath = Settings.FullPath + Constants.CONTROLS_FILE;
+            _settings.ZeroTime = Shared.GetTimeFromMilliseconds( competition[0].ZeroTime);
+            var controlsFilenameAndPath = _settings.FullPath + Constants.CONTROLS_FILE;
             validSetupFiles = (Shared.IsFileExists(controlsFilenameAndPath));
             if (!validSetupFiles) return false;
-            controls = new CSVHelper<Control>().ReadData(Settings.FullPath + Constants.CONTROLS_FILE, new Control()).ToList();
+            controls = new CSVHelper<Control>().ReadData(_settings.FullPath + Constants.CONTROLS_FILE, new Control()).ToList();
 
-            var coursesFilenameAndPath = Settings.FullPath + Constants.COURSES_FILE;
+            var coursesFilenameAndPath = _settings.FullPath + Constants.COURSES_FILE;
             validSetupFiles = (Shared.IsFileExists(coursesFilenameAndPath));
             if (!validSetupFiles) return false;
-            courses = new CSVHelper<Course>().ReadData(Settings.FullPath + Constants.COURSES_FILE, new Course()).ToList();
+            courses = new CSVHelper<Course>().ReadData(_settings.FullPath + Constants.COURSES_FILE, new Course()).ToList();
 
-            var coursesVariantsFilenameAndPath = Settings.FullPath + Constants.COURSE_VARIANTS_FILE;
+            var coursesVariantsFilenameAndPath = _settings.FullPath + Constants.COURSE_VARIANTS_FILE;
             validSetupFiles = (Shared.IsFileExists(coursesVariantsFilenameAndPath));
             if (!validSetupFiles) return false;
-            courseVariants = new CSVHelper<CourseVariant>().ReadData(Settings.FullPath + Constants.COURSE_VARIANTS_FILE, new CourseVariant()).ToList();
+            courseVariants = new CSVHelper<CourseVariant>().ReadData(_settings.FullPath + Constants.COURSE_VARIANTS_FILE, new CourseVariant()).ToList();
 
             return validSetupFiles;
-
         }
 
         private static bool Validate()
@@ -124,6 +116,7 @@ namespace OR_Results
                 if (!Shared.CompetitorCourseExists(competitor.CourseId))
                     return false;
             }
+
             return true;
         }
 
@@ -138,7 +131,7 @@ namespace OR_Results
 
             if (Shared.ResultsFileExists())
             {
-                results = new CSVHelper<CompetitorResult>().ReadData(Settings.FullPath + Constants.RESULTS_FILE, new CompetitorResult(), Constants.SEMICOLON).ToList();
+                results = new CSVHelper<CompetitorResult>().ReadData(_settings.FullPath + Constants.RESULTS_FILE, new CompetitorResult(), Constants.SEMICOLON).ToList();
                 ParseResults(results);
                 ManipulateData();
                 GenerateResults();
@@ -151,11 +144,11 @@ namespace OR_Results
 
         private static bool BuildInitialiseFile()
         {
-            var competitorsFilenameAndPath = Settings.FullPath + Constants.COMPETITORS_FILE;
+            var competitorsFilenameAndPath = _settings.FullPath + Constants.COMPETITORS_FILE;
             if (!Shared.IsFileExists(competitorsFilenameAndPath))
                 return false;
 
-            competitors = new CSVHelper<Competitor>().ReadData(Settings.FullPath + Constants.COMPETITORS_FILE, new Competitor(), Constants.SEMICOLON).ToList();
+            competitors = new CSVHelper<Competitor>().ReadData(_settings.FullPath + Constants.COMPETITORS_FILE, new Competitor(), Constants.SEMICOLON).ToList();
             if ((competitors == null) || (!Validate()))
                 return false;
 
@@ -202,39 +195,6 @@ namespace OR_Results
             SortResults();
             DisplayResults();
         }
-
-        //private static void CheckForStart()
-        //{
-        //    foreach (var competitorPunches in coursePunches)
-        //    {
-        //        var competitorCourseSummary = new CompetitorResultSummary();
-        //        competitorCourseSummary.SI = competitorPunches.SI;
-
-        //        competitorCourseSummary.CourseId =
-        //            (GetCompetitorCourse(competitorCourseSummary) == null)
-        //            ? string.Empty
-        //            : GetCompetitorCourse(competitorCourseSummary);
-
-        //        competitorCourseSummary.StartTime = competitorPunches.CompetitorControls[0].CoursePunchTime;
-        //        if (competitorCourseSummary.StartTime == TimeSpan.Zero)
-        //            competitorCourseSummary.Status = (int)Status.DidNotStart;
-        //        else
-        //        {
-        //            if (competitorPunches.CompetitorControls.Any(s => s.CoursePunchName == Constants.FINISH_PUNCH))
-        //            {
-        //                competitorCourseSummary.FinishTime = competitorPunches.CompetitorControls.SingleOrDefault(s => s.CoursePunchName == Constants.FINISH_PUNCH).CoursePunchTime;
-        //                competitorCourseSummary.Status = (int)Status.Finished;
-
-        //                CalculateScore(competitorPunches.CompetitorControls, competitorCourseSummary);
-        //            }
-        //            else
-        //            {
-        //                GetStatus(competitorCourseSummary);
-        //            }
-        //        }
-        //        CompetitorCourseSummaries.Add(competitorCourseSummary);
-        //    }
-        //}
 
         private static void SortResults()
         {
@@ -407,6 +367,7 @@ namespace OR_Results
                     newList.Add(controlPunch);
                 }
             }
+
             return newList;
         }
 
@@ -414,6 +375,7 @@ namespace OR_Results
         {
             if (courses.First(c => c.CourseId == courseId).CourseType == Constants.COURSE_TYPE_SCORE)
                 return true;
+
             return false;
         }
 
@@ -436,8 +398,6 @@ namespace OR_Results
                 amount += (control == null) ? 0 : control.Score;
             }
 
-            //CheckForPenalties(coursePunches);
-
             return amount;
         }
 
@@ -448,12 +408,10 @@ namespace OR_Results
 
             double timeSpanMinutes = competitorResultSummary.ElapsedTime.Value.TotalMinutes;
 
-            var x = (int)Math.Ceiling(timeSpanMinutes);// - courseTimeLimit
+            var x = (int)Math.Ceiling(timeSpanMinutes);
             var y = x -  Convert.ToInt16( courseTimeLimit);
 
             return (y > 0) ? (y * Convert.ToInt16(penaltyPointsPerMinute)) : 0;
-
-            //return 0;
 
         }
 
@@ -464,7 +422,9 @@ namespace OR_Results
 
         private static void DisplayResults()
         {
-            var displayResults = new DisplayResults(new Settings());
+            var displayResults = new DisplayResults(_settings);
+            var displayResultsHtml = new DisplayResultsHtml(_settings, displayResults.listDisplayTable);
+            displayResultsHtml.BaseHTMLFile();
         }
 
         private static void ParseResults(List<CompetitorResult> records)
@@ -516,7 +476,6 @@ namespace OR_Results
                 };
                 competitorControls.Add(finishCompetitorControl);
 
-
                 foreach (var row in record.ControlPunches)
                 {
                     int number;
@@ -541,8 +500,6 @@ namespace OR_Results
 
         private static bool isValidSI(int sI)
         {
-            //throw new NotImplementedException();
-            //check result SI entered 
             return competitors.Any(c => c.SI == sI);
         }
 
@@ -564,8 +521,6 @@ namespace OR_Results
 
             if (dateTime == Constants.NULL_RECORD)
             {
-                //check for mass start time
-
                 return new TimeSpan(0, 0, 0);
             }
 
@@ -589,6 +544,5 @@ namespace OR_Results
         }
 
     }
-
 
 }
