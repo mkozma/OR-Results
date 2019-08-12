@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OR_Results
 {
@@ -64,9 +62,7 @@ namespace OR_Results
 
         public static bool CompetitorCourseExists(string competitorCourseId)
         {
-            var x = Program.courses.Any(c => c.CourseId == competitorCourseId);
-            return x;
-
+            return Program.courses.Any(c => c.CourseId == competitorCourseId);
         }
 
         public static TimeSpan GetTimeFromMilliseconds(long input)
@@ -85,8 +81,8 @@ namespace OR_Results
                 m = remainder / 60;
                 s = remainder % 60;
             }
-            return new TimeSpan(h, m, s);
 
+            return new TimeSpan(h, m, s);
         } 
 
         public static int NumberOfCompetitorsRemaining(List<CompetitorResultSummary> competitorResultSummaries)
@@ -130,7 +126,7 @@ namespace OR_Results
         public static string GetTimeDiffFromLeader(TimeSpan? leaderTime, TimeSpan? thisTime, int status, int i)
         {
             if 
-                ((i == 1) || 
+                ((i == 0) || 
                 (status == (int)Status.DidNotStart) || 
                 status == (int)Status.Mispunch)
                     return string.Empty;
@@ -171,10 +167,8 @@ namespace OR_Results
 
             var club = Program.competitors.SingleOrDefault(c => c.SI == SI).Club;
 
-
             if (!isImageFileExists(club + Constants.IMAGE_SIZE ))
             {
-
                 return clubImagePath = String.Format("{0}",  "OV" + Constants.IMAGE_SIZE + Constants.IMAGE_FILE_EXTENSION);
             }
 
@@ -185,16 +179,15 @@ namespace OR_Results
             club = (hasSpace) ? club.Replace(" ", "%20") : club;
             return clubImagePath = String.Format("{0}",  club + Constants.IMAGE_SIZE + Constants.IMAGE_FILE_EXTENSION);
         }
-        public static string GetElapsedTime(int SI)
+
+
+        public static string GetElapsedTime(TimeSpan elapsedTime, int status = 0)
         {
-            //var elapsedTime = course.Items[i - 1].ElapsedTime;
-            var elapsedTime = Program.CompetitorCourseSummaries.FirstOrDefault(c => c.SI == SI).ElapsedTime;
-            var status = Program.CompetitorCourseSummaries.FirstOrDefault(c => c.SI == SI).Status;
 
             if ((elapsedTime == TimeSpan.MaxValue) ||
                 (elapsedTime == TimeSpan.Zero) ||
                 (status != (int)Status.Finished) ||
-                (elapsedTime < TimeSpan.Zero)) 
+                (elapsedTime < TimeSpan.Zero))
                 return string.Empty;
             else
                 return elapsedTime.ToString();
@@ -204,6 +197,24 @@ namespace OR_Results
         public static string GetVersion()
         {
             return "Version: "+ Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        }
+
+        public static string GetCourseHeader(
+            List<DisplayTable> listDisplayTable,
+            DisplayTable displayTable, 
+            DisplayCourse displayCourse)
+        {
+            if (displayTable.ListDisplayCourses.First() != displayCourse)
+                return displayCourse.CourseId;
+
+            if (displayTable.Id == 1)
+                return displayCourse.CourseId;
+
+            var previousCourse = listDisplayTable.Single(c => c.Id == displayTable.Id-1).ListDisplayCourses.Last().ListDisplayRows.Last().Course;
+
+            var compare = (displayCourse.CourseId == previousCourse) ? true : false;
+
+            return (compare == true) ? previousCourse + "..." : displayCourse.CourseId;
         }
     }
 }

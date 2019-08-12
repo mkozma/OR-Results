@@ -105,7 +105,11 @@
     <Compile Include="CoursePunch.cs" />
     <Compile Include="CourseVariant.cs" />
     <Compile Include="CSVHelper.cs" />
+    <Compile Include="DisplayCourse.cs" />
     <Compile Include="DisplayResults.cs" />
+    <Compile Include="DisplayResultsHtml.cs" />
+    <Compile Include="DisplayRow.cs" />
+    <Compile Include="DisplayTable.cs" />
     <Compile Include="HTMLHelper.cs" />
     <Compile Include="ILog.cs" />
     <Compile Include="Log.cs" />
@@ -124,9 +128,12 @@
     <Compile Include="Settings.cs" />
     <Compile Include="Shared.cs" />
     <Compile Include="Status.cs" />
+    <Compile Include="TableRowCount.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="js\bootstrap.bundle.js.map" />
     <None Include="js\bootstrap.bundle.min.js.map" />
     <None Include="js\bootstrap.js.map" />

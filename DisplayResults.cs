@@ -1,298 +1,225 @@
-﻿using HtmlAgilityPack;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace OR_Results
 {
     public class DisplayResults
     {
+        private Settings _settings;
+        private string score = string.Empty;
+        private string netscore = string.Empty;
+        private int courseCount = 0;
+        private string time = string.Empty;
+        private const int NUMBER_OF_COLUMNS = 3;
+        private TableRowCount tableRowCount = null;
+        private List<TableRowCount> listTableRowCount = new List<TableRowCount>();
+
         public int mensCount { get; set; }
         public int womensCount { get; set; }
+        public List<DisplayRow> listDisplayRow = new List<DisplayRow>();
+        public List<DisplayCourse> listDisplayCourses = new List<DisplayCourse>();
+        public List<DisplayTable> listDisplayTable = new List<DisplayTable>();
+        public int DataToSkip { get; set; }
+        public int DataToTake { get; set; }
 
-        private Settings _settings;
-
-        string score = string.Empty;
-        string netscore = string.Empty;
-        int iNetScore = 0;
-
-        int courseCount = 0;
-        //int classCount = 0;
-        string time = string.Empty;
-        string imageSize = "15";
-        char hyphen = '-';
-
-        HtmlDocument doc = new HtmlDocument();
-        StringBuilder html = new StringBuilder();
+        public int DataCount
+        {
+            get { return Program.CompetitorCourseSummaries.Count; }
+        }
 
         public DisplayResults(Settings settings)
         {
             _settings = settings;
-            BaseHTMLFile();
+
+            CalculateDataPerColumn();
+
+            CalculateDataInTables();
+
+            BuildDisplayTable();
+
         }
 
-        private void BaseHTMLFile()
+        private void CalculateDataPerColumn()
         {
-            html.Append("<html>");
-            html.Append("<head>");
-            if (_settings.RefreshBrowser)
-                html.Append("<meta http-equiv='refresh' content='5' />");
-
-            html.Append("<Link rel='stylesheet' href='css/bootstrap.min.css'>");
-            html.Append("<Link rel='stylesheet' href='css/main.css'>");
-
-            html.Append("</head>");
-            html.Append("<body>");
-
-            html.Append("<div class='container-fluid'>");
-
-            html.Append("<div class='row'>");
-            html.Append("<div class='col-sm'>");
-            html.Append("<h3>");
-            html.Append("Last update: " + Shared.GetCurrentTime());
-            html.Append("</h3>");
-            html.Append("</div>");
-            html.Append("<div class='col-sm'>");
-            html.Append("<h2>");
-            html.Append(Program.competition[0].Name);
-            html.Append("</h2>");
-            html.Append("</div>");
-            html.Append("<div class='col-sm'>");
-            html.Append("<h3>");
-            html.Append("Competitors: ");
-            html.Append(Program.CompetitorCourseSummaries.Count.ToString());
-            html.Append(" ");
-            html.Append("Remaining: ");
-            html.Append(Shared.NumberOfCompetitorsRemaining(Program.CompetitorCourseSummaries));
-            html.Append("</h3>");
-            html.Append("</div>");
-            html.Append("</div>");
-
-            html.Append("<div class='row'>");
-
-            DisplayColumns();
-
-            html.Append("</div>");
-            html.Append("<div class='row'>");
-            html.Append("<div class='col-sm footer'>");
-            html.Append(Shared.GetVersion());
-            html.Append("</div>");
-            html.Append("</div>");
-
-
-            html.Append("<script src='js/jquery.min.js'></script>");
-            html.Append("<script src='js/bootstrap.min.js'></script>");
-
-            html.Append("</body>");
-
-            html.Append("</html>");
-
-            doc.LoadHtml(html.ToString());
-
-            doc.Save(_settings.WebServerFilePath);
-
-            if (_settings.OpenLocalBrowser)
-                System.Diagnostics.Process.Start(_settings.WebServerFilePath);
-        }
-
-        private void DisplayColumns()
-        {
-            //calculate rows per column
-            var dataCount = Program.CompetitorCourseSummaries.Count;
             var coursesCount = Program.courses.Count;
-            double dataCountDbl = (((coursesCount * 2) + dataCount) / 3);
-            int dataToTake = (int)Math.Ceiling(dataCountDbl);
-            int dataToSkip = 0;
-
-            var course = string.Empty;
-
-            //Column 1
-            var currentCourse = BulldHTMLTable(Program.CompetitorCourseSummaries.ToList(), dataToSkip, dataToTake, null);
-            dataToSkip = dataToSkip + dataToTake;
-
-            //Column 2
-            currentCourse = BulldHTMLTable(Program.CompetitorCourseSummaries, dataToSkip, dataToTake, currentCourse);
-            dataToSkip = dataToSkip + dataToTake;
-
-            //column 3
-            currentCourse = BulldHTMLTable(Program.CompetitorCourseSummaries, dataToSkip, dataCount - dataToSkip, currentCourse);
+            double dataCountDbl = (((coursesCount * 2) + DataCount) / NUMBER_OF_COLUMNS);
+            DataToTake = (int)Math.Ceiling(dataCountDbl);
+            DataToSkip = 0;
         }
 
-        private HTMLHelper BulldHTMLTable(List<CompetitorResultSummary> dataList, int dataToSkip, int dataToTake, HTMLHelper htmlHelper)
+        private void CalculateDataInTables()
         {
-            var data1 = dataList.Skip(dataToSkip).Take(dataToTake).ToList();
-            var data = data1.GroupBy(c => c.CourseId)
+            listTableRowCount = new List<TableRowCount>();
+            var remainingData = DataCount;
+            for (int i = 1; i<= NUMBER_OF_COLUMNS; i++)
+            {
+                tableRowCount = new TableRowCount();
+                tableRowCount.Id = i;
+                tableRowCount.DataToSkip = DataToSkip;
+
+                //test for get remaining 
+                DataToTake = (DataToTake < remainingData) ? DataToTake : remainingData;
+                tableRowCount.DataToTake = DataToTake;
+                remainingData -= DataToTake;
+
+                listTableRowCount.Add(tableRowCount);
+                DataToSkip += DataToTake;
+            }
+
+        }
+
+        private void BuildDisplayTable()
+        {
+            TableRowCount lastTableRowCount = null;
+
+            foreach (TableRowCount item in listTableRowCount)
+            {
+                if (lastTableRowCount != null)
+                {
+                    item.LastCourseCount = lastTableRowCount.LastCourseCount;
+                    item.LastCourse = lastTableRowCount.LastCourse;
+                    item.LastMensClassCount = lastTableRowCount.LastMensClassCount;
+                    item.LastWomensClassCount = lastTableRowCount.LastWomensClassCount;
+                }
+
+                var result = BuildDisplayRow(Program.CompetitorCourseSummaries.Skip(item.DataToSkip).Take(item.DataToTake).ToList(), item);
+
+                lastTableRowCount = item;
+            }
+        }
+
+        private TableRowCount BuildDisplayRow(List<CompetitorResultSummary> competitorResultSummaries, TableRowCount tableRowCount)
+        {
+            var data = competitorResultSummaries.GroupBy(c => c.CourseId)
                 .Select(group => new { course = group.Key, Items = group.ToList() })
                 .ToList();
 
-            var prevCourse = string.Empty;
-            var prevClass = string.Empty;
+            int mensClassCount;
+            int womensClassCount;
 
-            TimeSpan? courseLeaderTime = TimeSpan.Zero;
+            var isContunation = false;
 
-            html.Append("<div class='col-lg'>");
+            if (tableRowCount.LastCourse == data[0].course)
+                isContunation = true;
 
-            foreach (var course in data)
+            courseCount = 1;
+            mensClassCount = 1;
+            womensClassCount = 1;
+
+            for (int i=1; i<= data.Count; i++)
             {
-                var courseDetails = Shared.GetCourseDetails(course.course);
-                html.Append("<table class='table'>");
-                html.Append("<thead>");
-                html.Append("<tr class='class-header'>");
-                html.Append("<th class='course-header' scope='col'>");
-
-                if (htmlHelper == null)
-                    html.Append(course.course);
-                else
-                    if (htmlHelper.Course == course.course)
-                        html.Append(htmlHelper.Course + "...");
-                else
-                    html.Append(course.course);
-                html.Append("</th>");
-
-                if (Shared.GetCourseTypeByCourse(course.course) != Constants.COURSE_TYPE_SCORE)
-                    html.Append("<th scope='col'>#</th>");
-                html.Append("<th scope='col'>St</th>");
-                html.Append("<th scope='col'>Name</th>");
-                html.Append("<th scope='col'>Time</th>");
-
-
-                if (Shared.GetCourseTypeByCourse( course.course) == Constants.COURSE_TYPE_SCORE)
+                if (isContunation)
                 {
-                    html.Append("<th scope='col'>Penalty</th>");
-                    html.Append("<th scope='col'>Net Score</th>");
-                    //html.Append("<th scope='col'>Score</th>");
+                    courseCount =  tableRowCount.LastCourseCount;
+                    mensClassCount = tableRowCount.LastMensClassCount;
+                    womensClassCount = tableRowCount.LastWomensClassCount;
+                    isContunation = false;
                 }
                 else
                 {
-                    html.Append("<th scope='col'>Diff</th>");
+                    courseCount = 0;
+                    mensClassCount = 0;
+                    womensClassCount = 0;
                 }
 
-                html.Append("</tr>");
-                html.Append("</thead>");
-                html.Append("<body>");
-
-                for (int i = 1; i <= course.Items.Count; i++)
+                for (int j = 1; j <= data[i - 1].Items.Count; j++)
                 {
-                    if (
-                        ((htmlHelper == null) && (i == 1))
-                    )
-                    {
-                        courseCount = 0;
-                        mensCount = 0;
-                        womensCount = 0;
-                    }
-                    else if ((htmlHelper != null) && (htmlHelper.IsNewTable == true))
-                    {
-                        courseCount = htmlHelper.CourseCount;
-                        mensCount = htmlHelper.ClassCountMen;
-                        womensCount = htmlHelper.ClassCountWomen;
-                        htmlHelper.IsNewTable = false;
-                    }
-                    else if ((htmlHelper != null) && (i == 1))
-                    {
-                        courseCount = 0;
-                        mensCount = 0;
-                        womensCount = 0;
-                    }
+                    var leaderTime = data[i-1].Items[0].ElapsedTime;
 
-                    courseCount++;
-                    html.Append("<tr");
-                    html.Append(" class='");
+                    var item = data[i - 1].Items[j - 1];
 
-                    html.Append(Shared.GetGenderFromClass(Program.GetCompetitorClass(course.Items[i - 1])));
-                    html.Append("'");
-                    html.Append(">");
-                    html.Append("<th scope ='row'>");
-                    html.Append(courseCount.ToString());
-                    html.Append("</th>");
-
-                    if (Shared.GetCourseTypeByCourse(course.course) != Constants.COURSE_TYPE_SCORE)
-                    {
-                        html.Append("<td class='class-count'>");
-                        if (Shared.GetGenderFromClass(Program.GetCompetitorClass(course.Items[i - 1])) == Constants.CLASS_TYPE_MEN) 
-                        {
-                            if (course.Items[i-1].Status != (int)Status.DidNotStart)
-                            {
-                                mensCount++;
-                                html.Append(mensCount.ToString());
-                            }
-                        }
-                        else
-                        {
-                            if (course.Items[i - 1].Status != (int)Status.DidNotStart)
-                            {
-                                womensCount++;
-                                html.Append(womensCount.ToString());
-                            }
-                        }
-                        html.Append("</td>");
-                    }
-
-                    html.Append("<td class='status'>");
-                    html.Append("<img src='Images/");
-                    html.Append(Shared.GetEnumValue(course.Items[i - 1].Status));
-                    html.Append(hyphen + imageSize);
-                    html.Append(".png' class='img-responsive'>");
-                    html.Append("</td>");
-                    html.Append("<td>");
-                    html.Append("<img src='Images/");
-                    html.Append(Shared.GetClubImage(course.Items[i - 1].SI));
-
-                    html.Append("' class='img-responsive mx-auto'>");
-                    html.Append(" ");
-                    html.Append(Program.GetName(course.Items[i - 1].SI));
-                    html.Append("</td>");
-                    var elapsedTime = course.Items[i - 1].ElapsedTime;
-                    html.Append("<td class='elapsed-time'>");
-
-                    html.Append(Shared.GetElapsedTime(course.Items[i - 1].SI));
-
-                   if(i == 1)
-                    {
-                        courseLeaderTime = elapsedTime;
-                    }
-
-                    if (Shared.GetCourseTypeByCourse(course.course) != Constants.COURSE_TYPE_SCORE)
-                    {
-                        html.Append("</td>");
-                        html.Append("<td>");
-                        html.Append(Shared.GetTimeDiffFromLeader(courseLeaderTime, course.Items[i - 1].ElapsedTime,course.Items[i-1].Status, i));
-                        html.Append("</td>");
-                    }
+                    courseCount += 1;
+                    if (Shared.GetGenderFromClass(item.ClassId) == "men")
+                        mensClassCount += 1;
                     else
-                    {
-                        html.Append("<td>");
-                        html.Append(score = (course.Items[i - 1].Penalty == 0) ? string.Empty : course.Items[i - 1].Penalty.ToString());
-                        html.Append("</td>");
-                        html.Append("<td>");
-                        iNetScore = (course.Items[i - 1].Score - course.Items[i - 1].Penalty);
-                        html.Append(netscore = (iNetScore == 0) ? string.Empty : iNetScore.ToString());
-                        html.Append("</td>");
-                        //html.Append("<td>");
-                        //html.Append(score = (course.Items[i - 1].Score == 0) ? string.Empty : course.Items[i - 1].Score.ToString());
-                        //html.Append("</td>");
-                       
-                    }
+                        womensClassCount += 1;
 
-                    html.Append("</tr>");
-                    prevCourse = course.course;
-                    prevClass = Program.GetCompetitorClass(course.Items[i - 1]);
+                    var genderCount = (Shared.GetGenderFromClass(item.ClassId) == "men") ? (mensClassCount).ToString() : (womensClassCount).ToString();
+
+                    var displayRow = new DisplayRow
+                    {
+                        Id = courseCount,
+                        Course = data[i-1].course,
+                        Class = item.ClassId,
+                        ClassCount = genderCount,
+                        Status = item.Status,
+                        Name = Shared.GetName(item.SI),
+                        SI = item.SI.ToString(),
+                        ElapsedTime =  (TimeSpan)item.ElapsedTime,
+                        TimeDifference = Shared.GetTimeDiffFromLeader(leaderTime, item.ElapsedTime, item.Status, j),
+                        Penalty = item.Penalty,
+                        NetScore = (item.Score - item.Penalty)
+                    };
+
+                    listDisplayRow.Add(displayRow);
                 }
-                html.Append("</table>");
+
+                var displayCourse = new DisplayCourse
+                {
+                    Id = i,
+                    CourseId = data[i - 1].course,
+                    LeaderTime = (i == 1) ? data[i - 1].Items[0].ElapsedTime : null,
+                    ListDisplayRows = listDisplayRow
+                };
+
+                listDisplayCourses.Add(displayCourse);
+
+                tableRowCount.LastCourseCount = listDisplayRow.Select(c => c.Id).Max();
+                tableRowCount.LastMensClassCount = mensClassCount;
+                tableRowCount.LastWomensClassCount = womensClassCount;
+                tableRowCount.LastCourse = listDisplayRow.Last().Course;
+
+                listDisplayRow = new List<DisplayRow>();
             }
            
-            html.Append("</div>");
-
-            return new HTMLHelper {
-                Course = prevCourse,
-                CourseCount = courseCount,
-                ClassCountMen = mensCount,
-                ClassCountWomen = womensCount,
-                IsNewTable = true
-            };
+            //Build the table
+            AddToDisplayTable(listDisplayCourses, tableRowCount.Id);
+            listDisplayRow = new List<DisplayRow>();
+            listDisplayCourses = new List<DisplayCourse>();
+            return tableRowCount;
         }
 
+        private void AddToDisplayTable(List<DisplayCourse> listDisplayCourses, int tableIndex)
+        {
+            var displayTable = new DisplayTable
+            {
+                Id = tableIndex,
+                ListDisplayCourses = listDisplayCourses
+            };
+
+            listDisplayTable.Add(displayTable);
+        }
+
+        #region Redundant
+
+
+        //private void DisplayColumns()
+        //{
+        //    //calculate rows per column
+        //    var dataCount = Program.CompetitorCourseSummaries.Count;
+        //    var coursesCount = Program.courses.Count;
+        //    double dataCountDbl = (((coursesCount * 2) + dataCount) / 3);
+        //    int dataToTake = (int)Math.Ceiling(dataCountDbl);
+        //    int dataToSkip = 0;
+
+        //    var course = string.Empty;
+
+        //    //Column 1
+        //    //var currentCourse = BulldHTMLTable(Program.CompetitorCourseSummaries.ToList(), dataToSkip, dataToTake, null);
+        //    dataToSkip = dataToSkip + dataToTake;
+
+
+
+        //    //Column 2
+        //    //currentCourse = BulldHTMLTable(Program.CompetitorCourseSummaries, dataToSkip, dataToTake, currentCourse);
+        //    dataToSkip = dataToSkip + dataToTake;
+
+
+        //    //column 3
+        //    //currentCourse = BulldHTMLTable(Program.CompetitorCourseSummaries, dataToSkip, dataCount - dataToSkip, currentCourse);
+        //}
+
+        #endregion
     }
 }
