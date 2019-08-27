@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OR_Results.Services;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,11 +16,11 @@ namespace OR_Results
         public static List<CompetitorResultSummary> CompetitorCourseSummaries { get; set; }
         public static List<CompetitorResult> results;
         public static List<CoursePunch> coursePunches;
-        public static List<Control> controls;
-        public static List<Competitor> competitors;
-        public static List<Course> courses;
-        public static List<CourseVariant> courseVariants;
-        public static List<Competition> competition;
+        private static CompetitionService competitionService = new CompetitionService();
+        private static ControlService controlService = new ControlService();
+        private static CourseService courseService = new CourseService();
+        private static CourseVariantService courseVariantService = new CourseVariantService();
+        private static CompetitorService competitorService = new CompetitorService();
 
         static void Main(string[] args)
         {
@@ -79,6 +80,7 @@ namespace OR_Results
         {
             var validSetupFiles = true;
 
+            //COMPETITION
             var competitionFilenameAndPath = _settings.FullPath + Constants.COMPETITION_FILE;
             validSetupFiles = (Shared.IsFileExists(competitionFilenameAndPath));
             if (!validSetupFiles)
@@ -87,23 +89,26 @@ namespace OR_Results
                 return false;
             }
 
-            competition = new CSVHelper<Competition>().ReadData(_settings.FullPath + Constants.COMPETITION_FILE, new Competition(), ";").ToList();
+           competitionService.competition = new CSVHelper<Competition>().ReadData(_settings.FullPath + Constants.COMPETITION_FILE, new Competition(), ";").ToList();
 
-            _settings.ZeroTime = Shared.GetTimeFromMilliseconds( competition[0].ZeroTime);
+            //CONTROL
+            _settings.ZeroTime = Shared.GetTimeFromMilliseconds(competitionService.competition[0].ZeroTime);
             var controlsFilenameAndPath = _settings.FullPath + Constants.CONTROLS_FILE;
             validSetupFiles = (Shared.IsFileExists(controlsFilenameAndPath));
             if (!validSetupFiles) return false;
-            controls = new CSVHelper<Control>().ReadData(_settings.FullPath + Constants.CONTROLS_FILE, new Control()).ToList();
+            controlService.controls  = new CSVHelper<Control>().ReadData(_settings.FullPath + Constants.CONTROLS_FILE, new Control()).ToList();
 
+            //COURSE
             var coursesFilenameAndPath = _settings.FullPath + Constants.COURSES_FILE;
             validSetupFiles = (Shared.IsFileExists(coursesFilenameAndPath));
             if (!validSetupFiles) return false;
-            courses = new CSVHelper<Course>().ReadData(_settings.FullPath + Constants.COURSES_FILE, new Course()).ToList();
+            courseService.courses = new CSVHelper<Course>().ReadData(_settings.FullPath + Constants.COURSES_FILE, new Course()).ToList();
 
+            //COURSEVARIANT
             var coursesVariantsFilenameAndPath = _settings.FullPath + Constants.COURSE_VARIANTS_FILE;
             validSetupFiles = (Shared.IsFileExists(coursesVariantsFilenameAndPath));
             if (!validSetupFiles) return false;
-            courseVariants = new CSVHelper<CourseVariant>().ReadData(_settings.FullPath + Constants.COURSE_VARIANTS_FILE, new CourseVariant()).ToList();
+             courseVariantService.courseVariants = new CSVHelper<CourseVariant>().ReadData(_settings.FullPath + Constants.COURSE_VARIANTS_FILE, new CourseVariant()).ToList();
 
             return validSetupFiles;
         }
@@ -111,9 +116,9 @@ namespace OR_Results
         private static bool Validate()
         {
             //check all competitor courses match courses
-            foreach(var competitor in competitors)
+            foreach(var competitor in competitorService.GetAll())
             {
-                if (!Shared.CompetitorCourseExists(competitor.CourseId))
+                if (!courseService.CompetitorCourseExists(competitor.CourseId))
                     return false;
             }
 
@@ -131,7 +136,7 @@ namespace OR_Results
 
             if (Shared.ResultsFileExists())
             {
-                results = new CSVHelper<CompetitorResult>().ReadData(_settings.FullPath + Constants.RESULTS_FILE, new CompetitorResult(), Constants.SEMICOLON).ToList();
+                  results = new CSVHelper<CompetitorResult>().ReadData(_settings.FullPath + Constants.RESULTS_FILE, new CompetitorResult(), Constants.SEMICOLON).ToList();
                 ParseResults(results);
                 ManipulateData();
                 GenerateResults();
@@ -144,30 +149,36 @@ namespace OR_Results
 
         private static bool BuildInitialiseFile()
         {
+            // COMPETITOR
             var competitorsFilenameAndPath = _settings.FullPath + Constants.COMPETITORS_FILE;
             if (!Shared.IsFileExists(competitorsFilenameAndPath))
                 return false;
 
-            competitors = new CSVHelper<Competitor>().ReadData(_settings.FullPath + Constants.COMPETITORS_FILE, new Competitor(), Constants.SEMICOLON).ToList();
-            if ((competitors == null) || (!Validate()))
+            competitorService.competitors = new CSVHelper<Competitor>().ReadData(_settings.FullPath + Constants.COMPETITORS_FILE, new Competitor(), Constants.SEMICOLON).ToList();
+            if ((competitorService.competitors == null) || (!Validate()))
                 return false;
 
+            BuildCompetitorSummary();
+
+            return true;
+        }
+
+        private static void BuildCompetitorSummary()
+        {
             CompetitorCourseSummaries = new List<CompetitorResultSummary>();
 
-            foreach(var competitor in competitors)
+            foreach (var competitor in competitorService.GetAll())
             {
                 var competitorResultSummary = new CompetitorResultSummary
                 {
                     SI = competitor.SI,
                     CourseId = competitor.CourseId,
-                    ClassId = Shared.GetCompetitorClass(competitor.SI),
+                    ClassId =  competitorService.Get(competitor.SI).ClassId,
                     Status = (int)Status.DidNotStart,
                     ElapsedTime = TimeSpan.MaxValue
                 };
                 CompetitorCourseSummaries.Add(competitorResultSummary);
             }
-
-            return true;
         }
 
         private static void ManipulateData()
@@ -206,7 +217,7 @@ namespace OR_Results
                 .ThenBy(c=>c.Status)
                 .ThenByDescending(c => c.Score)
                 .ThenBy(c => c.ElapsedTime)
-                .ThenBy(c => Shared.GetName(c.SI))
+                .ThenBy(c => competitorService.Get(c.SI).Name)
                 .ToList();
         }
 
@@ -226,22 +237,23 @@ namespace OR_Results
             for (int i = 1; i<= CompetitorCourseSummaries.Count; i++)
             {
                 courseCount = (prevCourse == CompetitorCourseSummaries[i - 1].CourseId) ? ++courseCount :  1;
-                classCount = (prevClass == GetCompetitorClass(CompetitorCourseSummaries[i - 1])) ? ++classCount : 1;
+                classCount = (prevClass == competitorService.Get(CompetitorCourseSummaries[i - 1].SI).ClassId) ? ++classCount : 1;
                 Console.Write("{0} {1} {2} {3} {4} {5} {6} {7} {8} {9}",
                     i.ToString(),
                     courseCount.ToString(),
                     classCount.ToString(),
                     CompetitorCourseSummaries[i - 1].CourseId,
-                    className = GetCompetitorClass(CompetitorCourseSummaries[i - 1]),
+                    className = competitorService.Get(CompetitorCourseSummaries[i - 1].SI).ClassId,
                     GetEnumValue(CompetitorCourseSummaries[i - 1].Status),
                     CompetitorCourseSummaries[i - 1].SI,
-                    GetName(CompetitorCourseSummaries[i - 1].SI),
+                    competitorService.Get(CompetitorCourseSummaries[i - 1].SI).Name,
                     score = (CompetitorCourseSummaries[i - 1].Score == 0) ? string.Empty : CompetitorCourseSummaries[i - 1].Score.ToString(),
                     elapsedTime = (CompetitorCourseSummaries[i - 1].Status == (int)Status.Finished) ?
                     CompetitorCourseSummaries[i - 1].ElapsedTime.ToString() : string.Empty);
-                Console.WriteLine();
+
+            Console.WriteLine();
                 prevCourse = CompetitorCourseSummaries[i - 1].CourseId;
-                prevClass = GetCompetitorClass(CompetitorCourseSummaries[i - 1]);
+                prevClass = competitorService. GetCompetitorClass(CompetitorCourseSummaries[i - 1]);
 
             }
             Console.ReadLine();
@@ -251,11 +263,6 @@ namespace OR_Results
         {
             Status enumDisplayStatus = (Status)value;
             return enumDisplayStatus.ToString();
-        }
-
-        public static object GetName(int sI)
-        {
-            return competitors.FirstOrDefault(c => c.SI == sI).Name;
         }
 
         private static void GenerateResults()
@@ -292,7 +299,7 @@ namespace OR_Results
 
         private static string GetCourseLastControlName(string courseId)
         {
-            var courseVariant = courseVariants.FirstOrDefault(c => c.CourseId == courseId);
+            var courseVariant = courseVariantService.Get(courseId);
             courseVariant.Controls.Reverse();
             var lastCourseControlName = courseVariant.Controls[0];
             courseVariant.Controls.Reverse();
@@ -308,8 +315,8 @@ namespace OR_Results
 
         private static void CalculateScore(List<CompetitorControl> competitorPunches, CompetitorResultSummary competitorCourseSummary)
         {
-            competitorCourseSummary.CourseId = GetCompetitorCourse(competitorCourseSummary);
-            if ((IsScoreCourse(competitorCourseSummary.CourseId)) && (competitorCourseSummary.FinishTime != null))
+            competitorCourseSummary.CourseId = competitorService.GetCompetitorCourse(competitorCourseSummary);
+            if ((courseService.IsScoreCourse(competitorCourseSummary.CourseId)) && (competitorCourseSummary.FinishTime != null))
             {
                 competitorCourseSummary.Score = CalculateScoreCoursePoints(competitorPunches);
                 competitorCourseSummary.Penalty = CheckForPenalties(competitorCourseSummary);
@@ -320,7 +327,7 @@ namespace OR_Results
 
         private static int CheckLineCourse(string courseId, List<CompetitorControl> competitorPunches)
         {
-            var courseVariantList = courseVariants.FirstOrDefault(c => c.CourseId == courseId).Controls.ToList();
+            var courseVariantList = courseVariantService.Get(courseId).Controls.ToList();
             courseVariantList.RemoveAt(0);
 
             var competitorPunchesList = competitorPunches.Select(c => c.CoursePunchName).ToList();
@@ -371,30 +378,12 @@ namespace OR_Results
             return newList;
         }
 
-        private static bool IsScoreCourse(string courseId)
-        {
-            if (courses.First(c => c.CourseId == courseId).CourseType == Constants.COURSE_TYPE_SCORE)
-                return true;
-
-            return false;
-        }
-
-        private static string GetCompetitorCourse(CompetitorResultSummary competitorCourseSummary)
-        {
-            return competitors.FirstOrDefault(c => c.SI == competitorCourseSummary.SI).CourseId;
-        }
-
-        public static string GetCompetitorClass(CompetitorResultSummary competitorResultSummary)
-        {
-            return competitors.FirstOrDefault(c => c.SI == competitorResultSummary.SI).ClassId;
-        }
-
         private static int CalculateScoreCoursePoints(List<CompetitorControl> coursePunches)
         {
             var amount = 0;
             foreach (var competitorControl in coursePunches)
             {
-                var control = controls.FirstOrDefault(s => s.Name == competitorControl.CoursePunchName);
+                var control = controlService.controls.FirstOrDefault(s => s.Name == competitorControl.CoursePunchName);
                 amount += (control == null) ? 0 : control.Score;
             }
 
@@ -403,8 +392,10 @@ namespace OR_Results
 
         private static int CheckForPenalties(CompetitorResultSummary competitorResultSummary)
         {
-            var courseTimeLimit = courses.FirstOrDefault(c => c.CourseId == competitorResultSummary.CourseId).TimeLimit;
-            var penaltyPointsPerMinute = courses.FirstOrDefault(c => c.CourseId == competitorResultSummary.CourseId).PenaltyPointsPerMinute;
+            var course = courseService.Get(competitorResultSummary.CourseId);
+
+            var courseTimeLimit = course.TimeLimit;
+            var penaltyPointsPerMinute = course.PenaltyPointsPerMinute;
 
             double timeSpanMinutes = competitorResultSummary.ElapsedTime.Value.TotalMinutes;
 
@@ -422,8 +413,18 @@ namespace OR_Results
 
         private static void DisplayResults()
         {
-            var displayResults = new DisplayResults(_settings);
-            var displayResultsHtml = new DisplayResultsHtml(_settings, displayResults.listDisplayTable);
+            var displayResults = new DisplayResults(
+                _settings, 
+                courseService, 
+                competitorService);
+
+            var displayResultsHtml = new DisplayResultsHtml(
+                _settings, 
+                displayResults.listDisplayTable,
+                competitionService,
+                courseService,
+                competitorService
+                );
             displayResultsHtml.BaseHTMLFile();
         }
 
@@ -435,7 +436,7 @@ namespace OR_Results
 
             foreach (var record in records)
             {
-                if (!isValidSI(record.SI))
+                if (!competitorService.isValidSI(record.SI))
                 {
                     break;
                 }
@@ -444,8 +445,8 @@ namespace OR_Results
                 coursePunch.SI = record.SI;
                 var competitorControls = new List<CompetitorControl>();
                 var competitorControl = new CompetitorControl();
-
-                var course = Shared.GetCourseBySI(record.SI);
+                
+                var course = courseService.GetCourseBySI(record.SI, competitorService);
                 if(course == null)
                 {
                     continue;
@@ -498,11 +499,6 @@ namespace OR_Results
             }
         }
 
-        private static bool isValidSI(int sI)
-        {
-            return competitors.Any(c => c.SI == sI);
-        }
-
         private static TimeSpan ParseControlPunch(string item)
         {
             int index = item.IndexOf(Constants.COLON);
@@ -518,7 +514,6 @@ namespace OR_Results
 
         private static TimeSpan ParseDateTime(string dateTime)
         {
-
             if (dateTime == Constants.NULL_RECORD)
             {
                 return new TimeSpan(0, 0, 0);
@@ -542,7 +537,6 @@ namespace OR_Results
 
             return new TimeSpan(Convert.ToInt16(hours), Convert.ToInt16(minutes), Convert.ToInt16(seconds));
         }
-
     }
 
 }

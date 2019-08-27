@@ -125,6 +125,12 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="Services\CompetiitorService.cs" />
+    <Compile Include="Services\CompetitionService.cs" />
+    <Compile Include="Services\CompetitorResultService.cs" />
+    <Compile Include="Services\ControlService.cs" />
+    <Compile Include="Services\CourseService.cs" />
+    <Compile Include="Services\CourseVariantService.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Shared.cs" />
     <Compile Include="Status.cs" />

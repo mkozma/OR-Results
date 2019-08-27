@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OR_Results.Services;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,32 +21,11 @@ namespace OR_Results
             return gender = className.Contains("Women") ? "women" : "men";
         }
 
-        public static Course GetCourseDetails(string courseId)
-        {
-            return Program.courses.FirstOrDefault(c => c.CourseId == courseId);
-        }
+        
 
         public static string GetCurrentTime()
         {
             return DateTime.Now.ToString("HH:mm:ss");
-        }
-
-        public static string GetCompetitorClass(int SI)
-        {
-            return Program.competitors.FirstOrDefault(c => c.SI == SI).ClassId;
-        }
-
-        public static string GetCourseIdBySI(int SI)
-        {
-            return Program.competitors.FirstOrDefault(c => c.SI == SI).CourseId;
-        }
-
-        public static Course GetCourseBySI(int SI)
-        {
-            var courseId = Program.competitors.FirstOrDefault(c => c.SI == SI).CourseId;
-            if(courseId == null) { return null;  }
-
-            return Program.courses.FirstOrDefault(c => c.CourseId == courseId);
         }
 
         public static bool ResultsFileExists()
@@ -53,16 +33,6 @@ namespace OR_Results
             string filename = new Settings().FullPath + "results.csv";
             bool torf = File.Exists(filename);
             return torf;
-        }
-
-        public static string GetName(int SI)
-        {
-            return Program.competitors.FirstOrDefault(c => c.SI == SI).Name;
-        }
-
-        public static bool CompetitorCourseExists(string competitorCourseId)
-        {
-            return Program.courses.Any(c => c.CourseId == competitorCourseId);
         }
 
         public static TimeSpan GetTimeFromMilliseconds(long input)
@@ -97,21 +67,10 @@ namespace OR_Results
             return total - numberFinished - numberDidNotFinish - numberMispunch;
         }
 
-        public static string GetCourseTypeByCourse(string courseId)
-        {
-            return Program.courses.SingleOrDefault(c => c.CourseId == courseId).CourseType;
-        }
 
         public static bool IsFileExists(string filename)
         {
             return File.Exists(filename);
-        }
-
-        public static string GetClub(int sI)
-        {
-            var club = Program.competitors.SingleOrDefault(c => c.SI == sI).Club;
-            var hasSpace = club.Contains(" ");
-            return (hasSpace) ? club.Replace(" ", "%20") : club;
         }
 
         public static bool isImageFileExists(string filename)
@@ -161,11 +120,11 @@ namespace OR_Results
             return shortForm;
         }
 
-        public static string GetClubImage(int SI)
+        public static string GetClubImage(int SI, CompetitorService competitorService)
         {
             string clubImagePath = string.Empty;
 
-            var club = Program.competitors.SingleOrDefault(c => c.SI == SI).Club;
+            var club = competitorService.Get(SI).Club;
 
             if (!isImageFileExists(club + Constants.IMAGE_SIZE ))
             {
@@ -180,10 +139,8 @@ namespace OR_Results
             return clubImagePath = String.Format("{0}",  club + Constants.IMAGE_SIZE + Constants.IMAGE_FILE_EXTENSION);
         }
 
-
         public static string GetElapsedTime(TimeSpan elapsedTime, int status = 0)
         {
-
             if ((elapsedTime == TimeSpan.MaxValue) ||
                 (elapsedTime == TimeSpan.Zero) ||
                 (status != (int)Status.Finished) ||
@@ -191,7 +148,6 @@ namespace OR_Results
                 return string.Empty;
             else
                 return elapsedTime.ToString();
-
         }
 
         public static string GetVersion()

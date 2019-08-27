@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OR_Results.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -15,11 +16,15 @@ namespace OR_Results
         private TableRowCount tableRowCount = null;
         private List<TableRowCount> listTableRowCount = new List<TableRowCount>();
 
-        public int mensCount { get; set; }
-        public int womensCount { get; set; }
+        //public int mensCount { get; set; }
+        //public int womensCount { get; set; }
         public List<DisplayRow> listDisplayRow = new List<DisplayRow>();
         public List<DisplayCourse> listDisplayCourses = new List<DisplayCourse>();
         public List<DisplayTable> listDisplayTable = new List<DisplayTable>();
+        //private CourseService courseService;
+        private CourseService _courseService;
+        private CompetitorService _competitorService;
+
         public int DataToSkip { get; set; }
         public int DataToTake { get; set; }
 
@@ -28,9 +33,11 @@ namespace OR_Results
             get { return Program.CompetitorCourseSummaries.Count; }
         }
 
-        public DisplayResults(Settings settings)
+        public DisplayResults(Settings settings, CourseService courseService, CompetitorService competitorService)
         {
             _settings = settings;
+            _courseService = courseService;
+            _competitorService = competitorService;
 
             CalculateDataPerColumn();
 
@@ -42,7 +49,7 @@ namespace OR_Results
 
         private void CalculateDataPerColumn()
         {
-            var coursesCount = Program.courses.Count;
+            var coursesCount = _courseService.GetAll().Count;
             double dataCountDbl = (((coursesCount * 2) + DataCount) / NUMBER_OF_COLUMNS);
             DataToTake = (int)Math.Ceiling(dataCountDbl);
             DataToSkip = 0;
@@ -66,7 +73,6 @@ namespace OR_Results
                 listTableRowCount.Add(tableRowCount);
                 DataToSkip += DataToTake;
             }
-
         }
 
         private void BuildDisplayTable()
@@ -144,7 +150,7 @@ namespace OR_Results
                         Class = item.ClassId,
                         ClassCount = genderCount,
                         Status = item.Status,
-                        Name = Shared.GetName(item.SI),
+                        Name =  _competitorService.Get(item.SI).Name,
                         SI = item.SI.ToString(),
                         ElapsedTime =  (TimeSpan)item.ElapsedTime,
                         TimeDifference = Shared.GetTimeDiffFromLeader(leaderTime, item.ElapsedTime, item.Status, j),
@@ -190,36 +196,5 @@ namespace OR_Results
 
             listDisplayTable.Add(displayTable);
         }
-
-        #region Redundant
-
-
-        //private void DisplayColumns()
-        //{
-        //    //calculate rows per column
-        //    var dataCount = Program.CompetitorCourseSummaries.Count;
-        //    var coursesCount = Program.courses.Count;
-        //    double dataCountDbl = (((coursesCount * 2) + dataCount) / 3);
-        //    int dataToTake = (int)Math.Ceiling(dataCountDbl);
-        //    int dataToSkip = 0;
-
-        //    var course = string.Empty;
-
-        //    //Column 1
-        //    //var currentCourse = BulldHTMLTable(Program.CompetitorCourseSummaries.ToList(), dataToSkip, dataToTake, null);
-        //    dataToSkip = dataToSkip + dataToTake;
-
-
-
-        //    //Column 2
-        //    //currentCourse = BulldHTMLTable(Program.CompetitorCourseSummaries, dataToSkip, dataToTake, currentCourse);
-        //    dataToSkip = dataToSkip + dataToTake;
-
-
-        //    //column 3
-        //    //currentCourse = BulldHTMLTable(Program.CompetitorCourseSummaries, dataToSkip, dataCount - dataToSkip, currentCourse);
-        //}
-
-        #endregion
     }
 }
