@@ -1,4 +1,5 @@
 ﻿using HtmlAgilityPack;
+using OR_Results.Services;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,14 +10,25 @@ namespace OR_Results
     {
         private readonly Settings _settings;
         private readonly List<DisplayTable> _listDisplayTable;
+        private readonly CompetitionService _competitionService;
+        private readonly Competition competition;
+        private readonly CourseService _courseService;
+        private readonly CompetitorService _competitorService;
         HtmlDocument doc = new HtmlDocument();
         StringBuilder html = new StringBuilder();
 
         public DisplayResultsHtml(Settings settings,
-                                  List<DisplayTable> listDisplayTable)
+                                  List<DisplayTable> listDisplayTable,
+                                  CompetitionService competitionService,
+                                  CourseService courseService,
+                                  CompetitorService competitorService)
         {
             _settings = settings;
             _listDisplayTable = listDisplayTable;
+            _competitionService = competitionService;
+            competition = competitionService.GetFirst();
+            _courseService = courseService;
+            _competitorService = competitorService;
         }
         public void BaseHTMLFile()
         {
@@ -41,7 +53,7 @@ namespace OR_Results
             html.Append("</div>");
             html.Append("<div class='col-sm'>");
             html.Append("<h2>");
-            html.Append(Program.competition[0].Name);
+            html.Append(competition.Name);
             html.Append("</h2>");
             html.Append("</div>");
             html.Append("<div class='col-sm'>");
@@ -154,7 +166,7 @@ namespace OR_Results
 
                     html.Append("<td>");
                     html.Append("<img src='Images/");
-                    html.Append(Shared.GetClubImage(Convert.ToInt32(item.SI)));
+                    html.Append(Shared.GetClubImage(Convert.ToInt32(item.SI), _competitorService));
                     html.Append("' class='img-responsive mx-auto'>");
                     html.Append(" ");
                     html.Append(item.Name);
