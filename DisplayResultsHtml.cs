@@ -113,14 +113,17 @@ namespace OR_Results
                 html.Append(courseDetails);
                 html.Append("</th>");
 
-                if (displayCourse.CourseId != Constants.COURSE_TYPE_SCORE)
+                //if (displayCourse.CourseId != Constants.COURSE_TYPE_SCORE)
+                if (_courseService.IsScoreCourse(displayCourse.CourseId))
                     html.Append("<th scope='col'>#</th>");
 
                 html.Append("<th scope='col'>St</th>");
                 html.Append("<th scope='col'>Name</th>");
                 html.Append("<th scope='col'>Time</th>");
+                html.Append("<th scope='col'>Diff</th>");
 
-                if (displayCourse.CourseId == Constants.COURSE_TYPE_SCORE)
+                //if (displayCourse.CourseId == Constants.COURSE_TYPE_SCORE)
+                if (_courseService.IsScoreCourse(displayCourse.CourseId))
                 {
                     html.Append("<th scope='col'>Penalty</th>");
                     html.Append("<th scope='col'>Net Score</th>");
@@ -150,7 +153,8 @@ namespace OR_Results
                     html.Append(item.Id);
                     html.Append("</th>");
 
-                    if (item.Course != Constants.COURSE_TYPE_SCORE)
+                    if (_courseService.IsScoreCourse(item.Course))
+                        //if (item.Course != Constants.COURSE_TYPE_SCORE)
                     {
                         html.Append("<td class='class'>");
                         html.Append(item.ClassCount);
@@ -177,20 +181,24 @@ namespace OR_Results
                     html.Append(elapsedTime);
                     html.Append("</td>");
 
-                    if (item.Course != Constants.COURSE_TYPE_SCORE)
+
+                    if (_courseService.IsScoreCourse(item.Course))
+                    //if (item.Course != Constants.COURSE_TYPE_SCORE)
                     {
-                        html.Append("<td>");
+                        html.Append("<td class='time-difference'>");
                         html.Append(item.TimeDifference);
                         html.Append("</td>");
                     }
 
-                    if (item.Course == Constants.COURSE_TYPE_SCORE)
+
+                    if (_courseService.IsScoreCourse(item.Course))
+                    //if (item.Course == Constants.COURSE_TYPE_SCORE)
                     {
-                        html.Append("<td>");
-                        html.Append((item.Penalty == 0) ? string.Empty : item.Penalty.ToString());
+                        html.Append("<td class='penalty'>");
+                        html.Append((item.Penalty == 0) ? string.Empty :    item.Penalty.ToString());
                         html.Append("</td>");
 
-                        html.Append("<td>");
+                        html.Append("<td class='net-score'>");
                         html.Append((item.NetScore == 0) ? string.Empty : item.NetScore.ToString());
                         html.Append("</td>");
                     }
