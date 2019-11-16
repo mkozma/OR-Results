@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Permissions;
+using System.Timers;
 
 namespace OR_Results
 {
@@ -72,8 +73,24 @@ namespace OR_Results
         {
             _settings = new Settings();
             Console.WriteLine(Shared.GetVersion());
+            InitialiseTimer();
 
             return ReadSetupFiles();
+        }
+
+        private static void InitialiseTimer()
+        {
+            //throw new NotImplementedException();
+            System.Timers.Timer aTimer = new System.Timers.Timer();
+            aTimer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
+            aTimer.Interval = _settings.TimerInterval;
+            aTimer.Enabled = _settings.Timer;
+        }
+
+        private static void OnTimedEvent(object source, ElapsedEventArgs e)
+        {
+            Console.WriteLine("Timer fired: {0}", DateTime.Now.ToString());
+            EventDayMontitoring();
         }
 
         private static bool ReadSetupFiles()

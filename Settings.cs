@@ -15,6 +15,8 @@ namespace OR_Results
         private string webServerFileLocation;
         private bool openLocalBrowser;
         private bool refreshBrowser;
+        private bool timer;
+        private int timerInterval;
         private string fullpath;
         private const string backSlash = "\\";
 
@@ -53,6 +55,18 @@ namespace OR_Results
             set { refreshBrowser = value;  }
         }
 
+        public bool Timer
+        {
+            get { return timer; }
+            set { timer = value;  }
+        }
+
+        public int TimerInterval
+        {
+            get { return timerInterval; }
+            set { timerInterval = value;  }
+        }
+
         public TimeSpan ZeroTime { get; set; }
 
         public Settings()
@@ -67,6 +81,9 @@ namespace OR_Results
             webServerFileLocation = ConfigurationManager.AppSettings["webServerFileLocation"];
             openLocalBrowser = (ConfigurationManager.AppSettings["openLocalBrowser"]=="true"? true: false );
             refreshBrowser = (ConfigurationManager.AppSettings["refreshBrowser"]=="true"? true: false );
+            timer = (ConfigurationManager.AppSettings["timer"] == "true" ? true : false);
+            timerInterval = Convert.ToInt32(ConfigurationManager.AppSettings["timerInterval"]);
+
         }
     }
 }
