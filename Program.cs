@@ -251,9 +251,9 @@ namespace OR_Results
 
             var scorePts = string.Empty;
 
-            for (int i = 1; i<= CompetitorCourseSummaries.Count; i++)
+            for (int i = 1; i <= CompetitorCourseSummaries.Count; i++)
             {
-                courseCount = (prevCourse == CompetitorCourseSummaries[i - 1].CourseId) ? ++courseCount :  1;
+                courseCount = (prevCourse == CompetitorCourseSummaries[i - 1].CourseId) ? ++courseCount : 1;
                 classCount = (prevClass == competitorService.Get(CompetitorCourseSummaries[i - 1].SI).ClassId) ? ++classCount : 1;
                 Console.Write("{0} {1} {2} {3} {4} {5} {6} {7} {8} {9}",
                     i.ToString(),
@@ -268,9 +268,9 @@ namespace OR_Results
                     elapsedTime = (CompetitorCourseSummaries[i - 1].Status == (int)Status.Finished) ?
                     CompetitorCourseSummaries[i - 1].ElapsedTime.ToString() : string.Empty);
 
-            Console.WriteLine();
+                Console.WriteLine();
                 prevCourse = CompetitorCourseSummaries[i - 1].CourseId;
-                prevClass = competitorService. GetCompetitorClass(CompetitorCourseSummaries[i - 1]);
+                prevClass = competitorService.GetCompetitorClass(CompetitorCourseSummaries[i - 1]);
 
             }
             Console.ReadLine();
@@ -425,7 +425,14 @@ namespace OR_Results
 
         private static void CalculateElapsedTime(CompetitorResultSummary competitorCourseSummary)
         {
-                competitorCourseSummary.ElapsedTime = competitorCourseSummary.FinishTime - competitorCourseSummary.StartTime;
+            var ft = competitorCourseSummary.FinishTime.Value;
+            if (ft.Hours == 0)
+            {
+                ft = TimeSpan.FromHours(12);
+                competitorCourseSummary.FinishTime = ft;
+            }
+
+            competitorCourseSummary.ElapsedTime = competitorCourseSummary.FinishTime - competitorCourseSummary.StartTime;
         }
 
         private static void DisplayResults()
