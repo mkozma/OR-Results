@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OR-Results", "OR-Results.cs
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "OR-Result-Setup", "..\OR-Result-Setup\OR-Result-Setup.vdproj", "{8A66D76C-F788-42E8-8972-48596913DF3E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OR-Results.Input", "..\OR-Results.Input\OR-Results.Input.csproj", "{FDF0AA60-517D-4652-A609-4741A0A2AE09}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,10 +19,6 @@ Global
 		{FD5EE2B2-EB03-4CBC-81DA-492B71ADB734}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8A66D76C-F788-42E8-8972-48596913DF3E}.Debug|Any CPU.ActiveCfg = Debug
 		{8A66D76C-F788-42E8-8972-48596913DF3E}.Release|Any CPU.ActiveCfg = Release
-		{FDF0AA60-517D-4652-A609-4741A0A2AE09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FDF0AA60-517D-4652-A609-4741A0A2AE09}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FDF0AA60-517D-4652-A609-4741A0A2AE09}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FDF0AA60-517D-4652-A609-4741A0A2AE09}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
